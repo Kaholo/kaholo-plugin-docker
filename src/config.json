@@ -4,18 +4,22 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.1.0",
-  "description": "Docker utility",
+  "version": "1.1.1",
+  "description": "Integration with Docker CLI.",
+  "category": "CONTAINERS",
+  "keywords": ["cloud", "container", "image", "docker", "repo", "repository"],
   "settings":[
     {
-      "name":"USER",
-      "viewName":"User",
-      "type":"string"
+      "name": "USER",
+      "viewName": "User",
+      "type": "string",
+      "description": "The username of the default docker user to use for docker commands that require that."
     },
     {
-      "name":"PASSWORD",
-      "viewName":"Password",
-      "type":"vault"
+      "name": "PASSWORD",
+      "viewName": "Password",
+      "type": "vault",
+      "description": "The password of the default docker user to use for docker commands that require that."
     }
   ],
   "methods": [
@@ -26,12 +30,14 @@
         {
           "name": "PATH",
           "viewName": "Path to Dockerfile",
-          "type": "string"
+          "type": "string",
+          "description": "The path of the the docker file to build the image from."
         },
         {
           "name": "TAG",
           "viewName": "Tag",
-          "type": "string"
+          "type": "string",
+          "description": "If specified, tag the new docker image with the specified tag."
         }
        ]
     },
@@ -42,27 +48,32 @@
         {
           "name": "USER",
           "viewName": "Username",
-          "type": "string"
+          "type": "string",
+          "description": "The username of the docker user to use to authenticate for this request."
         },
         {
           "name": "PASSWORD",
           "viewName": "Password",
-          "type": "vault"
+          "type": "vault",
+          "description": "The password of the docker user to use to authenticate for this request."
+        },
+        {
+          "name": "IMAGE",
+          "viewName": "Image Name",
+          "type": "string",
+          "description": "The name of the image to pull."
+        },
+        {
+          "name": "TAG",
+          "viewName": "Image Tag",
+          "type": "string",
+          "description": "The tag/version of the image to pull. On default will use 'latest'."
         },
         {
           "name": "URL",
           "viewName": "Registry (optional)",
-          "type": "string"
-        },
-        {
-          "name": "IMAGE",
-          "viewName": "Image name",
-          "type": "string"
-        },
-        {
-          "name": "TAG",
-          "viewName": "Image tag",
-          "type": "string"
+          "type": "string",
+          "description": "If specified, pull the image from the specified registry/repository. On default use the Docker Hub registry."
         }
       ]
     },
@@ -73,29 +84,33 @@
         {
           "name": "USER",
           "viewName": "Username",
-          "type": "string"
+          "type": "string",
+          "description": "The username of the docker user to use to authenticate for this request."
         },
         {
           "name": "PASSWORD",
           "viewName": "Password",
-          "type": "vault"
-        },
-        {
-          "name": "IMAGETAG",
-          "viewName": "Tag",
-          "type": "string"
+          "type": "vault",
+          "description": "The password of the docker user to use to authenticate for this request."
         },
         {
           "name": "IMAGE",
-          "viewName": "Image name",
-          "type": "string"
+          "viewName": "Image Name",
+          "type": "string",
+          "description": "The name of the image to push."
+        },
+        {
+          "name": "IMAGETAG",
+          "viewName": "Image Tag",
+          "type": "string",
+          "description": "The tag/version of the image to push. On default will use 'latest'."
         },
         {
           "name": "URL",
           "viewName": "Registry (optional)",
-          "type": "string"
+          "type": "string",
+          "description": "If specified, push the image to the specified registry/repository. On default use the Docker Hub registry."
         }
-
       ]
     },
     {
@@ -105,22 +120,28 @@
         {
           "name": "SOURCEIMAGE",
           "viewName": "Source registry",
-          "type": "string"
+          "type": "string",
+          "description": "The URL of the registry the image is stored on. On default use the Docker Hub registry."
         },
         {
           "name": "SOURCEIMAGETAG",
           "viewName": "Source image tag",
-          "type": "string"
+          "type": "string",
+          "description": "The name + tag(will assume 'latest' if tag not specified) of the image to tag.",
+          "placeholder": "mysql:latest"
         },
         {
           "name": "NEWIMAGE",
           "viewName": "New registry",
-          "type": "string"
+          "type": "string",
+          "description": "The URL of the registry to store the new image tag on. On default use the Docker Hub registry."
         },
         {
           "name": "NEWIMAGETAG",
           "viewName": "New image tag",
-          "type": "string"
+          "type": "string",
+          "description": "The name + tag of the new image to create.",
+          "placeholder": "myNewTag:1.0.0"
         }
       ]
     },
@@ -131,7 +152,8 @@
         {
           "name": "PARAMS",
           "viewName": "Docker Command",
-          "type": "string"
+          "type": "string",
+          "description": "The docker command to run. No need to specify 'docker' in the start of the command."
         }
       ]
     }
