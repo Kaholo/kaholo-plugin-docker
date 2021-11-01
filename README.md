@@ -23,9 +23,9 @@ Based on the [Docker Documentation](https://docs.docker.com/engine/reference/com
 ### Parameters:
 1. Username (String) **Optional** - Username of the user to authenticate to the registry with.
 2. Password (Vault) **Optional** - Password of the user to authenticate to the registry with.
-3. Registry name (String) **Optional** - The url of the registry to pull from. if empty, assume docker hub as a default.
-4. Image name (String) **Required** - The name of the image to pull.
-5. Image tag (String) **Optional** - The tag of the image to pull. If not specified assume latest.
+3. Image name (String) **Required** - The name of the image to pull.
+4. Image tag (String) **Optional** - The tag of the image to pull. If not specified assume latest.
+5. Registry name (String) **Optional** - The url of the registry to pull from. if empty, assume docker hub as a default.
 
 ## Method: Push to repo
 This method push an image to a repo such as docker hub
@@ -47,7 +47,7 @@ Based on [Docker Documentation](https://docs.docker.com/engine/reference/command
 ```docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]```
 
 ### Parameters:
-1. Source Registry (String) **Optional** - the url of the registry the image is stored on. Assume docker hub if not specified.
+1. Source Registry (String) **Optional** - The URL of the registry the image is stored on. Assume docker hub if not specified.
 2. Source Image Tag (String) **Required** - The name + tag(will assume 'latest' if tag not specified) of the image to tag.
 3. New Registry (String) **Optional** - the url of the registry to store the new image in. Assume docker hub if not specified.
 4. New Image Tag (String) **Required** - The name + tag of the new image to create.
