@@ -4,7 +4,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Integration with Docker CLI.",
   "category": "CONTAINERS",
   "keywords": ["cloud", "container", "image", "docker", "repo", "repository"],
@@ -13,13 +13,15 @@
       "name": "USER",
       "viewName": "User",
       "type": "string",
-      "description": "The username of the default docker user to use for docker commands that require that."
+      "description": "The username of the default docker user to use for docker commands that require that.",
+      "placeholder": "username"
     },
     {
       "name": "PASSWORD",
       "viewName": "Password",
       "type": "vault",
-      "description": "The password of the default docker user to use for docker commands that require that."
+      "description": "The password of the default docker user to use for docker commands that require that.",
+      "placeholder": "pass1234!"
     }
   ],
   "methods": [
@@ -31,13 +33,17 @@
           "name": "PATH",
           "viewName": "Path to Dockerfile",
           "type": "string",
-          "description": "The path of the the docker file to build the image from."
+          "description": "The path of the the docker file to build the image from.",
+          "placeholder": "/home/username/",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/"
         },
         {
           "name": "TAG",
           "viewName": "Tag",
           "type": "string",
-          "description": "If specified, tag the new docker image with the specified tag."
+          "description": "If specified, tag the new docker image with the specified tag.",
+          "placeholder": "kaholo:1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         }
        ]
     },
@@ -49,31 +55,41 @@
           "name": "USER",
           "viewName": "Username",
           "type": "string",
-          "description": "The username of the docker user to use to authenticate for this request."
+          "description": "The username of the docker user to use to authenticate for this request.",
+          "placeholder": "username",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         },
         {
           "name": "PASSWORD",
           "viewName": "Password",
           "type": "vault",
-          "description": "The password of the docker user to use to authenticate for this request."
+          "description": "The password of the docker user to use to authenticate for this request.",
+          "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         },
         {
           "name": "IMAGE",
           "viewName": "Image Name",
           "type": "string",
-          "description": "The name of the image to pull."
+          "description": "The name of the image to pull.",
+          "placeholder": "kaholo",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         },
         {
           "name": "TAG",
           "viewName": "Image Tag",
           "type": "string",
-          "description": "The tag/version of the image to pull. On default will use 'latest'."
+          "description": "The tag/version of the image to pull. On default will use 'latest'.",
+          "placeholder": "1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
           "name": "URL",
           "viewName": "Registry (optional)",
           "type": "string",
-          "description": "If specified, pull the image from the specified registry/repository. On default use the Docker Hub registry."
+          "description": "If specified, pull the image from the specified registry/repository. On default use the Docker Hub registry.",
+          "placeholder": "https://registry.hub.docker.com",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         }
       ]
     },
@@ -85,31 +101,41 @@
           "name": "USER",
           "viewName": "Username",
           "type": "string",
-          "description": "The username of the docker user to use to authenticate for this request."
+          "description": "The username of the docker user to use to authenticate for this request.",
+          "placeholder": "username",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         },
         {
           "name": "PASSWORD",
           "viewName": "Password",
           "type": "vault",
-          "description": "The password of the docker user to use to authenticate for this request."
+          "description": "The password of the docker user to use to authenticate for this request.",
+          "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         },
         {
           "name": "IMAGE",
           "viewName": "Image Name",
           "type": "string",
-          "description": "The name of the image to push."
+          "description": "The name of the image to push.",
+          "placeholder": "kaholo",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         },
         {
           "name": "IMAGETAG",
           "viewName": "Image Tag",
           "type": "string",
-          "description": "The tag/version of the image to push. On default will use 'latest'."
+          "description": "The tag/version of the image to push. On default will use 'latest'.",
+          "placeholder": "1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
           "name": "URL",
           "viewName": "Registry (optional)",
           "type": "string",
-          "description": "If specified, push the image to the specified registry/repository. On default use the Docker Hub registry."
+          "description": "If specified, push the image to the specified registry/repository. On default use the Docker Hub registry.",
+          "placeholder": "https://registry.hub.docker.com",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
     },
@@ -121,27 +147,33 @@
           "name": "SOURCEIMAGE",
           "viewName": "Source registry",
           "type": "string",
-          "description": "The URL of the registry the image is stored on. On default use the Docker Hub registry."
+          "description": "The URL of the registry the image is stored on. On default use the Docker Hub registry.",
+          "placeholder": "https://registry.hub.docker.com",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
           "name": "SOURCEIMAGETAG",
           "viewName": "Source image tag",
           "type": "string",
           "description": "The name + tag(will assume 'latest' if tag not specified) of the image to tag.",
-          "placeholder": "mysql:latest"
+          "placeholder": "mysql:latest",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
           "name": "NEWIMAGE",
           "viewName": "New registry",
           "type": "string",
-          "description": "The URL of the registry to store the new image tag on. On default use the Docker Hub registry."
+          "description": "The URL of the registry to store the new image tag on. On default use the Docker Hub registry.",
+          "placeholder": "https://registry.hub.docker.com",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
           "name": "NEWIMAGETAG",
           "viewName": "New image tag",
           "type": "string",
           "description": "The name + tag of the new image to create.",
-          "placeholder": "myNewTag:1.0.0"
+          "placeholder": "myNewTag:1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         }
       ]
     },
@@ -153,7 +185,9 @@
           "name": "PARAMS",
           "viewName": "Docker Command",
           "type": "string",
-          "description": "The docker command to run. No need to specify 'docker' in the start of the command."
+          "description": "The docker command to run. No need to specify 'docker' in the start of the command.",
+          "placeholder": "build https://github.com/docker/rootfs.git#container:docker",
+          "learnUrl": "https://docs.docker.com/"
         }
       ]
     }
