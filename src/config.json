@@ -4,11 +4,21 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "Integration with Docker CLI.",
-  "category": "CONTAINERS",
-  "keywords": ["cloud", "container", "image", "docker", "repo", "repository"],
-  "settings":[
+  "category": [
+    "CLOUD",
+    "CONTAINERS"
+  ],
+  "keywords": [
+    "cloud",
+    "container",
+    "image",
+    "docker",
+    "repo",
+    "repository"
+  ],
+  "settings": [
     {
       "name": "USER",
       "viewName": "User",
@@ -45,7 +55,7 @@
           "placeholder": "kaholo:1.0.0",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         }
-       ]
+      ]
     },
     {
       "name": "pull",
