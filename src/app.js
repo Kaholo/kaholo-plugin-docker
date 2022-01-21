@@ -1,14 +1,20 @@
 const Docker = require('dockerode');
-const { _getUrl, _getAuth, _streamFollow, execCmd } = require("./helpers");
+const path = require('path');
+const { _getUrl, _getAuth, _streamFollow, execCmd, isFile } = require("./helpers");
 const docker = new Docker();
 
 async function build(action) {
     const tag = action.params.TAG.trim();
-    const path = action.params.PATH.trim();
-    if (!path){
+    let inputPath = action.params.PATH.trim();
+    if (!inputPath){
         throw "Must provide docker file path";
+    } 
+
+    if (isFile(inputPath)) {
+        inputPath = path.join(inputPath, '..');
     }
-    const cmd = `docker build ${tag ? `-t ${tag} `: ""}${path}`;
+
+    const cmd = `docker build ${tag ? `-t ${tag} `: ""}${inputPath}`;
     return execCmd(cmd);
 }
 
