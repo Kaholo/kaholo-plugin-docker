@@ -41,9 +41,9 @@
       "params": [
         {
           "name": "PATH",
-          "viewName": "Path to Dockerfile",
+          "viewName": "Dockerfile Path",
           "type": "string",
-          "description": "The path of the the docker file to build the image from.",
+          "description": "Absolute path of the the directory with docker file to build the image from.",
           "placeholder": "/home/username/",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/"
         },

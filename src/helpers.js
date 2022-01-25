@@ -1,4 +1,5 @@
 const exec = require('child_process').exec;
+const { lstatSync } = require('fs');
 
 function _getUrl(url, image, tag){
     return `${url ? `${url}/` : ''}${image}:${tag}`
@@ -37,9 +38,19 @@ async function execCmd(cmd){
     })
 }
 
+function isFile(path) {
+    try {
+        let stat = lstatSync(path);
+        return stat.isFile();
+    } catch (error) {
+        throw error
+    }
+}
+
 module.exports = {
     _getUrl,
     _getAuth,
     _streamFollow,
-    execCmd
+    execCmd,
+    isFile
 };
