@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Integration with Docker CLI.",
   "category": [
     "CLOUD",
