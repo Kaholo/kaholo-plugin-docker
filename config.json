@@ -99,7 +99,7 @@
           "viewName": "Registry (optional)",
           "type": "string",
           "description": "If specified, pull the image from the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "https://registry.hub.docker.com",
+          "placeholder": "docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         }
       ]
@@ -145,7 +145,7 @@
           "viewName": "Registry (optional)",
           "type": "string",
           "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "https://registry.hub.docker.com",
+          "placeholder": "docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
@@ -159,7 +159,7 @@
           "viewName": "Source registry",
           "type": "string",
           "description": "The URL of the registry the image is stored on. By default will use the Docker Hub registry.",
-          "placeholder": "https://registry.hub.docker.com",
+          "placeholder": "docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
@@ -175,7 +175,7 @@
           "viewName": "New registry",
           "type": "string",
           "description": "The URL of the registry to store the new image tag on. By default will use the Docker Hub registry.",
-          "placeholder": "https://registry.hub.docker.com",
+          "placeholder": "docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
         },
         {
