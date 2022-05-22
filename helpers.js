@@ -8,7 +8,7 @@ function getUrl(url, image, tag) {
   return `${url ? `${url}/` : ""}${image}:${tag || "latest"}`;
 }
 
-function getAuth(authParams) {
+function mapParamsToAuthConfig(authParams) {
   return {
     username: authParams.USER,
     password: authParams.PASSWORD,
@@ -50,7 +50,7 @@ function isFile(path) {
 
 module.exports = {
   getUrl,
-  getAuth,
+  mapParamsToAuthConfig,
   streamFollow,
   execCmd,
   isFile,

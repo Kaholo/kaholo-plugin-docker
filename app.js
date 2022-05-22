@@ -2,7 +2,11 @@ const kaholoPluginLibrary = require("kaholo-plugin-library");
 const Docker = require("dockerode");
 const path = require("path");
 const {
-  getUrl, getAuth, streamFollow, execCmd, isFile,
+  getUrl,
+  mapParamsToAuthConfig,
+  streamFollow,
+  execCmd,
+  isFile,
 } = require("./helpers");
 
 const docker = new Docker();
@@ -30,7 +34,7 @@ async function pull({
   TAG: imageTag,
   ...authParams
 }) {
-  const auth = getAuth(authParams);
+  const auth = mapParamsToAuthConfig(authParams);
   const imageUrl = getUrl(url, image, imageTag);
 
   return docker
@@ -46,7 +50,7 @@ async function pushImageToPrivateRepo({
   URL: url,
   ...authParams
 }) {
-  const auth = getAuth(authParams);
+  const auth = mapParamsToAuthConfig(authParams);
   const imageUrl = getUrl(url, imageRepo, imageTag);
 
   const image = docker.getImage(`${imageRepo}:${imageTag}`);
