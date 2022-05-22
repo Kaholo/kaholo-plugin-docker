@@ -1,3 +1,4 @@
+const kaholoPluginLibrary = require("kaholo-plugin-library");
 const Docker = require("dockerode");
 const path = require("path");
 const {
@@ -6,73 +7,101 @@ const {
 
 const docker = new Docker();
 
-async function build(action) {
-  const imageTag = action.params.TAG.trim();
-  let inputPath = action.params.PATH.trim();
+async function build({
+  TAG: imageTag,
+  PATH,
+}) {
+  let inputPath = PATH.trim();
   if (!inputPath) {
-    // eslint-disable-next-line no-throw-literal
-    throw "Must provide docker file path";
+    throw new Error("Must provide docker file path");
   }
 
   if (isFile(inputPath)) {
-    inputPath = path.join(inputPath, "..");
+    inputPath = path.dirname(inputPath);
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
   return execCmd(cmd);
 }
 
-async function pull(action, settings) {
-  const auth = getAuth(action, settings);
-  const imageUrl = getUrl(action.params.URL, action.params.IMAGE, action.params.TAG);
+async function pull({
+  URL: url,
+  IMAGE: image,
+  TAG: imageTag,
+  ...authParams
+}) {
+  const auth = getAuth(authParams);
+  const imageUrl = getUrl(url, image, imageTag);
 
-  return docker.pull(imageUrl, { authconfig: auth })
+  return docker
+    .pull(imageUrl, { authconfig: auth })
     .then(
       (stream) => streamFollow(stream, docker),
     );
 }
 
-async function push(action, settings) {
-  const imageTag = action.params.IMAGETAG;
-  const imageRepo = action.params.IMAGE;
-
-  const auth = getAuth(action, settings);
-  const imageUrl = getUrl(action.params.URL, imageRepo, imageTag);
+async function pushImageToPrivateRepo({
+  IMAGETAG: imageTag,
+  IMAGE: imageRepo,
+  URL: url,
+  ...authParams
+}) {
+  const auth = getAuth(authParams);
+  const imageUrl = getUrl(url, imageRepo, imageTag);
 
   const image = docker.getImage(`${imageRepo}:${imageTag}`);
-  image.tag({ repo: imageUrl });
+  await image.tag({ repo: imageUrl });
 
   const imageToPush = docker.getImage(imageUrl);
 
-  return imageToPush.push({ authconfig: auth, registry: imageUrl })
+  return imageToPush
+    .push({ authconfig: auth, registry: imageUrl })
     .then((stream) => streamFollow(stream, docker));
 }
 
-async function tag(action) {
-  return new Promise((resolve, reject) => {
-    const sourceReg = action.params.SOURCEIMAGE;
-    const sourceImageTag = action.params.SOURCEIMAGETAG;
-    const newReg = action.params.NEWIMAGE;
-    const newImageTag = action.params.NEWIMAGETAG;
-    const image = docker.getImage(`${sourceReg}/${sourceImageTag}`);
-    image.tag({ repo: `${newReg}/${newImageTag}` }, (err, res) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(res);
-    });
-  });
+async function pushImage({
+  image,
+  imageTag,
+  url,
+  USER: username,
+  PASSWORD: password,
+}) {
+  const imageUrl = getUrl(url, image, imageTag);
+
+  const dockerLoginCommand = "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin";
+  const dockerPushCommand = `docker push ${imageUrl}`;
+  const environmentVariables = {
+    KAHOLO_DOCKER_PLUGIN_USER: username,
+    KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
+  };
+
+  const command = `${dockerLoginCommand} && ${dockerPushCommand}`;
+  return execCmd(command, environmentVariables);
 }
 
-async function cmdExec(action) {
-  const cmd = `docker ${action.params.PARAMS}`;
+async function tag({
+  SOURCEIMAGE: sourceRegistry,
+  SOURCEIMAGETAG: sourceImageTag,
+  NEWIMAGE: newRegistry,
+  NEWIMAGETAG: newImageTag,
+}) {
+  const image = docker.getImage(`${sourceRegistry}/${sourceImageTag}`);
+
+  return image.tag({ repo: `${newRegistry}/${newImageTag}` });
+}
+
+async function cmdExec({
+  PARAMS,
+}) {
+  const cmd = `docker ${PARAMS}`;
   return execCmd(cmd);
 }
 
-module.exports = {
+module.exports = kaholoPluginLibrary.bootstrap({
   build,
   pull,
-  push,
+  push: pushImageToPrivateRepo,
+  pushImage,
   tag,
   cmdExec,
-};
+});
