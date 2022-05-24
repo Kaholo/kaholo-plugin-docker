@@ -35,6 +35,7 @@ async function execCmd(cmd, environmentVariables = {}) {
   if (stderr) {
     console.error(stderr);
   }
+
   return stdout;
 }
 

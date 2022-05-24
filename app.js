@@ -15,13 +15,9 @@ async function build({
   TAG: imageTag,
   PATH,
 }) {
-  let inputPath = PATH.trim();
-  if (!inputPath) {
-    throw new Error("Must provide docker file path");
-  }
-
-  if (isFile(inputPath)) {
-    inputPath = path.dirname(inputPath);
+  let inputPath = PATH;
+  if (isFile(PATH)) {
+    inputPath = path.dirname(PATH);
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
