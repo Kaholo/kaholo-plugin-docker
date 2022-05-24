@@ -34,11 +34,11 @@ async function pull({
   TAG: imageTag,
   ...authParams
 }) {
-  const auth = mapParamsToAuthConfig(authParams);
+  const authConfig = mapParamsToAuthConfig(authParams);
   const imageUrl = getUrl(url, image, imageTag);
 
   return docker
-    .pull(imageUrl, { authconfig: auth })
+    .pull(imageUrl, { authconfig: authConfig })
     .then(
       (stream) => streamFollow(stream, docker),
     );
@@ -50,7 +50,7 @@ async function pushImageToPrivateRepo({
   URL: url,
   ...authParams
 }) {
-  const auth = mapParamsToAuthConfig(authParams);
+  const authConfig = mapParamsToAuthConfig(authParams);
   const imageUrl = getUrl(url, imageRepo, imageTag);
 
   const image = docker.getImage(`${imageRepo}:${imageTag}`);
@@ -59,7 +59,7 @@ async function pushImageToPrivateRepo({
   const imageToPush = docker.getImage(imageUrl);
 
   return imageToPush
-    .push({ authconfig: auth, registry: imageUrl })
+    .push({ authconfig: authConfig, registry: imageUrl })
     .then((stream) => streamFollow(stream, docker));
 }
 
