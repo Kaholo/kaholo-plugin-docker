@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "description": "Integration with Docker CLI.",
   "category": [
     "CLOUD",
@@ -46,7 +46,8 @@
           "type": "string",
           "description": "Absolute path of the directory containing the Dockerfile to build the image from.",
           "placeholder": "/home/username/",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
+          "required": true
         },
         {
           "name": "TAG",
@@ -84,7 +85,8 @@
           "type": "string",
           "description": "The name of the image to pull.",
           "placeholder": "kaholo",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/",
+          "required": true
         },
         {
           "name": "TAG",
@@ -106,7 +108,7 @@
     },
     {
       "name": "push",
-      "viewName": "Push to repo",
+      "viewName": "Push Image to Private Repo",
       "params": [
         {
           "name": "USER",
@@ -130,7 +132,8 @@
           "type": "string",
           "description": "The name of the image to push.",
           "placeholder": "kaholo",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
         },
         {
           "name": "IMAGETAG",
@@ -151,6 +154,53 @@
       ]
     },
     {
+      "name": "pushImage",
+      "viewName": "Push Image",
+      "params": [
+        {
+          "name": "USER",
+          "viewName": "Username",
+          "type": "string",
+          "description": "The username of the Docker user used to authenticate for this request.",
+          "placeholder": "username",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "PASSWORD",
+          "viewName": "Password",
+          "type": "vault",
+          "description": "The password of the Docker user used to authenticate for this request.",
+          "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "image",
+          "viewName": "Image Name",
+          "type": "string",
+          "description": "The name of the image to push.",
+          "placeholder": "kaholo",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
+        },
+        {
+          "name": "imageTag",
+          "viewName": "Image Tag",
+          "type": "string",
+          "description": "The tag/version of the image to push. By default will use 'latest'.",
+          "placeholder": "1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+        },
+        {
+          "name": "url",
+          "viewName": "Registry (optional)",
+          "type": "string",
+          "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
+          "placeholder": "docker.io",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        }
+      ]
+    },
+    {
       "name": "tag",
       "viewName": "Tag image",
       "params": [
@@ -160,7 +210,8 @@
           "type": "string",
           "description": "The URL of the registry the image is stored on. By default will use the Docker Hub registry.",
           "placeholder": "docker.io",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/",
+          "required": true
         },
         {
           "name": "SOURCEIMAGETAG",
@@ -168,7 +219,8 @@
           "type": "string",
           "description": "The name + tag (will use 'latest' if tag not specified) of the image to tag.",
           "placeholder": "mysql:latest",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/",
+          "required": true
         },
         {
           "name": "NEWIMAGE",
@@ -176,7 +228,8 @@
           "type": "string",
           "description": "The URL of the registry to store the new image tag on. By default will use the Docker Hub registry.",
           "placeholder": "docker.io",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/",
+          "required": true
         },
         {
           "name": "NEWIMAGETAG",
@@ -184,7 +237,8 @@
           "type": "string",
           "description": "The name + tag of the new image to create.",
           "placeholder": "myNewTag:1.0.0",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/",
+          "required": true
         }
       ]
     },

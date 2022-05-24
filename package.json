@@ -1,6 +1,5 @@
 {
   "name": "kaholo-plugin-docker",
-  "version": "1.1.5",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -11,13 +10,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^8.8.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.4",
-    "jest": "^27.5.0"
+    "eslint": "8.8.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-plugin-import": "2.25.4",
+    "jest": "27.5.0"
   },
   "dependencies": {
     "child_process": "1.0.2",
-    "dockerode": "2.5.8"
+    "dockerode": "2.5.8",
+    "kaholo-plugin-library": "github:Kaholo/kaholo-plugin-library#v1.2.0"
   }
 }

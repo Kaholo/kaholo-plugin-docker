@@ -1,40 +1,42 @@
-const { exec } = require("child_process");
+const childProcess = require("child_process");
+const { promisify } = require("util");
 const { lstatSync } = require("fs");
+
+const exec = promisify(childProcess.exec);
 
 function getUrl(url, image, tag) {
   return `${url ? `${url}/` : ""}${image}:${tag || "latest"}`;
 }
 
-function getAuth(action, settings) {
+function mapParamsToAuthConfig(authParams) {
   return {
-    username: action.params.USER || settings.USER,
-    password: action.params.PASSWORD || settings.PASSWORD,
+    username: authParams.USER,
+    password: authParams.PASSWORD,
   };
 }
 
 function streamFollow(stream, docker) {
   return new Promise((resolve, reject) => {
     docker.modem.followProgress(stream, (err, res) => {
-      if (err) return reject(err);
-      let cmdOutput = "";
-      res.forEach((result) => {
-        cmdOutput += result.status;
-      });
+      if (err) {
+        return reject(err);
+      }
+      const cmdOutput = res.reduce(
+        (accumulatedCmd, singleResult) => accumulatedCmd + singleResult.status,
+        "",
+      );
       return resolve({ output: cmdOutput });
     });
   });
 }
 
-async function execCmd(cmd) {
-  return new Promise((resolve, reject) => {
-    exec(cmd, (err, stdout, stderr) => {
-      if (err) return reject(err);
-      if (stderr) {
-        console.error(stderr);
-      }
-      return resolve(stdout);
-    });
-  });
+async function execCmd(cmd, environmentVariables = {}) {
+  const { stdout, stderr } = await exec(cmd, { env: environmentVariables });
+  if (stderr) {
+    console.error(stderr);
+  }
+
+  return stdout;
 }
 
 function isFile(path) {
@@ -49,7 +51,7 @@ function isFile(path) {
 
 module.exports = {
   getUrl,
-  getAuth,
+  mapParamsToAuthConfig,
   streamFollow,
   execCmd,
   isFile,
