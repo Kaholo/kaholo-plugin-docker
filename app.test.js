@@ -1,12 +1,12 @@
-const mockImagePush = jest.fn();
-const mockImageTag = jest.fn();
+const mockImagePush = jest.fn(() => Promise.resolve());
+const mockImageTag = jest.fn(() => Promise.resolve());
 
 const mockDockerGetImage = jest.fn(() => ({
   push: mockImagePush,
   tag: mockImageTag,
 }));
 
-const mockDockerPull = jest.fn();
+const mockDockerPull = jest.fn(() => Promise.resolve());
 
 const helpers = require("./helpers");
 const app = require("./app");
@@ -20,12 +20,18 @@ jest.mock("dockerode", () => jest.fn().mockImplementation(() => ({
 jest.mock("./helpers", () => ({
   __esModule: true,
   isFile: jest.fn(),
-  execCmd: jest.fn(),
+  execCommand: jest.fn(),
   getAuth: jest.fn(() => ({
     username: "username",
     password: "password",
   })),
+  mapParamsToAuthConfig: jest.fn((authParams) => ({
+    username: authParams.USER,
+    password: authParams.PASSWORD,
+  })),
   getUrl: jest.fn(() => "url:image:tag"),
+  deleteConfigFile: jest.fn(),
+  streamFollow: jest.fn(),
 }));
 
 describe("docker plugin test", () => {
@@ -33,53 +39,58 @@ describe("docker plugin test", () => {
     jest.clearAllMocks();
   });
   describe("build", () => {
-    it("should return docker build command with path", () => {
+    it("should return docker build command with path", async () => {
       const action = {
         params: {
           TAG: "tag",
           PATH: "path/path/file",
         },
+        method: { name: "build" },
       };
+      const settings = {};
 
       const cmd = "docker build -t tag path/path/file";
       helpers.isFile.mockImplementation(() => false);
-      app.build(action);
+      await app.build(action, settings);
 
-      expect(helpers.execCmd).toHaveBeenCalledTimes(1);
-      expect(helpers.execCmd).toHaveBeenCalledWith(cmd);
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith(cmd);
     });
 
-    it("it should return docker build command with current directory", () => {
+    it("it should return docker build command with current directory", async () => {
       const action = {
         params: {
           TAG: "tag",
           PATH: "file",
         },
+        method: { name: "build" },
       };
+      const settings = {};
 
       const cmd = "docker build -t tag .";
       helpers.isFile.mockImplementation(() => true);
-      app.build(action);
+      await app.build(action, settings);
 
-      expect(helpers.execCmd).toHaveBeenCalledTimes(1);
-      expect(helpers.execCmd).toHaveBeenCalledWith(cmd);
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith(cmd);
     });
   });
 
   describe("pull", () => {
-    it("should call docker pull", () => {
+    it("should call docker pull", async () => {
       const action = {
         params: {
-          USER: "user",
+          USER: "username",
           PASSWORD: "password",
           URL: "url",
           IMAGE: "image",
           TAG: "tag",
         },
+        method: { name: "pull" },
       };
       const settings = {};
 
-      app.pull(action, settings);
+      await app.pull(action, settings);
       const auth = getAuth();
       const url = getUrl();
 
@@ -89,22 +100,23 @@ describe("docker plugin test", () => {
   });
 
   describe("push", () => {
-    it("should call docker push", () => {
+    it("should call docker push", async () => {
       const action = {
         params: {
-          USER: "user",
+          USER: "username",
           PASSWORD: "password",
           URL: "url",
           IMAGE: "image",
           IMAGETAG: "image-tag",
           TAG: "tag",
         },
+        method: { name: "push" },
       };
       const settings = {};
       const auth = getAuth();
       const url = getUrl();
 
-      app.push(action, settings);
+      await app.push(action, settings);
 
       expect(mockDockerGetImage).toHaveBeenCalledTimes(2);
       expect(mockDockerGetImage).toHaveBeenCalledWith(`${action.params.IMAGE}:${action.params.IMAGETAG}`);
@@ -119,7 +131,7 @@ describe("docker plugin test", () => {
   });
 
   describe("tag", () => {
-    it("should tag docker image", () => {
+    it("should tag docker image", async () => {
       const action = {
         params: {
           NEWIMAGE: "image",
@@ -127,9 +139,12 @@ describe("docker plugin test", () => {
           SOURCEIMAGE: "sourceimage",
           SOURCEIMAGETAG: "sourceimage-tag",
         },
+        method: { name: "tag" },
       };
 
-      app.tag(action);
+      const settings = {};
+
+      await app.tag(action, settings);
 
       expect(mockDockerGetImage).toHaveBeenCalledTimes(1);
       expect(mockDockerGetImage).toHaveBeenCalledWith(`${action.params.SOURCEIMAGE}/${action.params.SOURCEIMAGETAG}`);
@@ -140,13 +155,21 @@ describe("docker plugin test", () => {
   });
 
   describe("cmdExec", () => {
-    it("should execute docker command", () => {
-      const action = { params: { PARAMS: "command to execute" } };
+    it("should execute docker command", async () => {
+      const action = {
+        params: {
+          PARAMS: "command to execute",
+          USER: null,
+          PASSWORD: null,
+        },
+        method: { name: "cmdExec" },
+      };
+      const settings = {};
 
-      app.cmdExec(action);
+      await app.cmdExec(action, settings);
 
-      expect(helpers.execCmd).toHaveBeenCalledTimes(1);
-      expect(helpers.execCmd).toHaveBeenCalledWith(`docker ${action.params.PARAMS}`);
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith(`docker ${action.params.PARAMS}`, {});
     });
   });
 });
