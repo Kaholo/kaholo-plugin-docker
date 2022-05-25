@@ -1,6 +1,7 @@
+const path = require("path");
+const { lstat, rm } = require("fs/promises");
 const childProcess = require("child_process");
 const { promisify } = require("util");
-const { lstatSync } = require("fs");
 
 const exec = promisify(childProcess.exec);
 
@@ -30,7 +31,7 @@ function streamFollow(stream, docker) {
   });
 }
 
-async function execCmd(cmd, environmentVariables = {}) {
+async function execCommand(cmd, environmentVariables = {}) {
   const { stdout, stderr } = await exec(cmd, { env: environmentVariables });
   if (stderr) {
     console.error(stderr);
@@ -39,9 +40,9 @@ async function execCmd(cmd, environmentVariables = {}) {
   return stdout;
 }
 
-function isFile(path) {
+async function isFile(filePath) {
   try {
-    const stat = lstatSync(path);
+    const stat = await lstat(filePath);
     return stat.isFile();
   } catch (error) {
     console.error(error);
@@ -49,10 +50,23 @@ function isFile(path) {
   }
 }
 
+const getLoginEnvironmentVariables = (username, password) => ({
+  KAHOLO_DOCKER_PLUGIN_USER: username,
+  KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
+});
+
+function deleteConfigFile() {
+  const filePath = path.resolve(".docker/config.json");
+
+  return rm(filePath, { force: true });
+}
+
 module.exports = {
   getUrl,
   mapParamsToAuthConfig,
   streamFollow,
-  execCmd,
+  execCommand,
   isFile,
+  getLoginEnvironmentVariables,
+  deleteConfigFile,
 };

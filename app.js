@@ -5,23 +5,27 @@ const {
   getUrl,
   mapParamsToAuthConfig,
   streamFollow,
-  execCmd,
+  execCommand,
   isFile,
+  getLoginEnvironmentVariables,
+  deleteConfigFile,
 } = require("./helpers");
 
 const docker = new Docker();
 
+const DOCKER_LOGIN_COMMAND = "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin";
+
 async function build({
   TAG: imageTag,
-  PATH,
+  PATH: buildPath,
 }) {
-  let inputPath = PATH;
-  if (isFile(PATH)) {
-    inputPath = path.dirname(PATH);
+  let inputPath = buildPath;
+  if (await isFile(buildPath)) {
+    inputPath = path.dirname(buildPath);
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
-  return execCmd(cmd);
+  return execCommand(cmd);
 }
 
 async function pull({
@@ -68,15 +72,15 @@ async function pushImage({
 }) {
   const imageUrl = getUrl(url, image, imageTag);
 
-  const dockerLoginCommand = "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin";
   const dockerPushCommand = `docker push ${imageUrl}`;
-  const environmentVariables = {
-    KAHOLO_DOCKER_PLUGIN_USER: username,
-    KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
-  };
+  const environmentVariables = getLoginEnvironmentVariables(username, password);
 
-  const command = `${dockerLoginCommand} && ${dockerPushCommand}`;
-  return execCmd(command, environmentVariables);
+  const command = `${DOCKER_LOGIN_COMMAND} && ${dockerPushCommand}`;
+  const result = await execCommand(command, environmentVariables);
+
+  await deleteConfigFile();
+
+  return result;
 }
 
 async function tag({
@@ -91,10 +95,32 @@ async function tag({
 }
 
 async function cmdExec({
-  PARAMS,
+  PARAMS: inputCommand,
+  USER: username,
+  PASSWORD: password,
 }) {
-  const cmd = `docker ${PARAMS}`;
-  return execCmd(cmd);
+  const commandsToExecute = [];
+  let environmentVariables = {};
+
+  const authenticate = username && password;
+
+  if (authenticate) {
+    commandsToExecute.push(DOCKER_LOGIN_COMMAND);
+    environmentVariables = getLoginEnvironmentVariables(username, password);
+  }
+
+  const userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
+  commandsToExecute.push(userCommand);
+
+  const command = commandsToExecute.join(" && ");
+
+  const result = await execCommand(command, environmentVariables);
+
+  if (authenticate) {
+    await deleteConfigFile();
+  }
+
+  return result;
 }
 
 module.exports = kaholoPluginLibrary.bootstrap({

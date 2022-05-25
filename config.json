@@ -244,8 +244,24 @@
     },
     {
       "name": "cmdExec",
-      "viewName": "Docker cmd",
+      "viewName": "Docker Command",
       "params": [
+        {
+          "name": "USER",
+          "viewName": "Username",
+          "type": "string",
+          "description": "The username of the Docker user used to authenticate for this request.",
+          "placeholder": "username",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "PASSWORD",
+          "viewName": "Password",
+          "type": "vault",
+          "description": "The password of the Docker user used to authenticate for this request.",
+          "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
         {
           "name": "PARAMS",
           "viewName": "Docker Command",
