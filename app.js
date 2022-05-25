@@ -102,9 +102,9 @@ async function cmdExec({
   const commandsToExecute = [];
   let environmentVariables = {};
 
-  const authenticate = username && password;
+  const useAuthentication = username && password;
 
-  if (authenticate) {
+  if (useAuthentication) {
     commandsToExecute.push(DOCKER_LOGIN_COMMAND);
     environmentVariables = getLoginEnvironmentVariables(username, password);
   }
@@ -116,7 +116,7 @@ async function cmdExec({
 
   const result = await execCommand(command, environmentVariables);
 
-  if (authenticate) {
+  if (useAuthentication) {
     await deleteConfigFile();
   }
 
