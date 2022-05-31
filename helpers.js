@@ -62,7 +62,7 @@ function deleteConfigFile() {
 }
 
 const createDockerLoginCommand = (registryUrl) => (
-  `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login${registryUrl ? `${registryUrl} ` : ""} -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
+  `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
 );
 
 module.exports = {
