@@ -1,5 +1,4 @@
-const path = require("path");
-const { lstat, rm } = require("fs/promises");
+const { lstat } = require("fs/promises");
 const childProcess = require("child_process");
 const { promisify } = require("util");
 
@@ -55,12 +54,6 @@ const getLoginEnvironmentVariables = (username, password) => ({
   KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
 });
 
-function deleteConfigFile() {
-  const filePath = path.resolve(".docker/config.json");
-
-  return rm(filePath, { force: true });
-}
-
 const createDockerLoginCommand = (registryUrl) => (
   `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
 );
@@ -72,6 +65,5 @@ module.exports = {
   execCommand,
   isFile,
   getLoginEnvironmentVariables,
-  deleteConfigFile,
   createDockerLoginCommand,
 };

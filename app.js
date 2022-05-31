@@ -8,7 +8,6 @@ const {
   execCommand,
   isFile,
   getLoginEnvironmentVariables,
-  deleteConfigFile,
   createDockerLoginCommand,
 } = require("./helpers");
 
@@ -77,8 +76,6 @@ async function pushImage({
   const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
   const result = await execCommand(command, environmentVariables);
 
-  await deleteConfigFile();
-
   return result;
 }
 
@@ -115,10 +112,6 @@ async function cmdExec({
   const command = commandsToExecute.join(" && ");
 
   const result = await execCommand(command, environmentVariables);
-
-  if (useAuthentication) {
-    await deleteConfigFile();
-  }
 
   return result;
 }
