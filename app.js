@@ -9,11 +9,10 @@ const {
   isFile,
   getLoginEnvironmentVariables,
   deleteConfigFile,
+  createDockerLoginCommand,
 } = require("./helpers");
 
 const docker = new Docker();
-
-const DOCKER_LOGIN_COMMAND = "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin";
 
 async function build({
   TAG: imageTag,
@@ -66,16 +65,16 @@ async function pushImageToPrivateRepo({
 async function pushImage({
   image,
   imageTag,
-  url,
+  url: registryUrl,
   USER: username,
   PASSWORD: password,
 }) {
-  const imageUrl = getUrl(url, image, imageTag);
+  const imageUrl = getUrl(registryUrl, image, imageTag);
 
   const dockerPushCommand = `docker push ${imageUrl}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
 
-  const command = `${DOCKER_LOGIN_COMMAND} && ${dockerPushCommand}`;
+  const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
   const result = await execCommand(command, environmentVariables);
 
   await deleteConfigFile();
@@ -98,6 +97,7 @@ async function cmdExec({
   PARAMS: inputCommand,
   USER: username,
   PASSWORD: password,
+  registryUrl,
 }) {
   const commandsToExecute = [];
   let environmentVariables = {};
@@ -105,7 +105,7 @@ async function cmdExec({
   const useAuthentication = username && password;
 
   if (useAuthentication) {
-    commandsToExecute.push(DOCKER_LOGIN_COMMAND);
+    commandsToExecute.push(createDockerLoginCommand(registryUrl));
     environmentVariables = getLoginEnvironmentVariables(username, password);
   }
 

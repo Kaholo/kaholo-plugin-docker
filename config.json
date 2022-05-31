@@ -192,10 +192,10 @@
         },
         {
           "name": "url",
-          "viewName": "Registry (optional)",
+          "viewName": "Registry URL",
           "type": "string",
           "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "docker.io",
+          "placeholder": "https://registry-1.docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
@@ -260,6 +260,14 @@
           "type": "vault",
           "description": "The password of the Docker user used to authenticate for this request.",
           "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "registryUrl",
+          "viewName": "Registry URL",
+          "type": "string",
+          "description": "URL of the docker registry.",
+          "placeholder": "https://registry-1.docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         },
         {
