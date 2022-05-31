@@ -1,4 +1,4 @@
-const kaholoPluginLibrary = require("kaholo-plugin-library");
+const kaholoPluginLibrary = require("@kaholo/plugin-library");
 const Docker = require("dockerode");
 const path = require("path");
 const {
