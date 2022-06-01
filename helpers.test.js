@@ -1,5 +1,5 @@
 const { exec } = require("child_process");
-const fs = require("fs");
+const fs = require("fs/promises");
 const helpers = require("./helpers");
 
 jest.mock("child_process", () => ({
@@ -8,8 +8,8 @@ jest.mock("child_process", () => ({
 
 const mockIsFile = jest.fn();
 
-jest.mock("fs", () => ({
-  lstatSync: jest.fn(() => ({
+jest.mock("fs/promises", () => ({
+  lstat: jest.fn(() => ({
     isFile: mockIsFile,
   })),
 }));
@@ -41,11 +41,11 @@ describe("docker plugin helpers test", () => {
     });
   });
 
-  describe("execCmd test", () => {
+  describe("execCommand test", () => {
     it("should execute a command", () => {
       const cmd = "test command";
 
-      helpers.execCmd(cmd);
+      helpers.execCommand(cmd);
 
       expect(exec).toHaveBeenCalledTimes(1);
       expect(exec.mock.calls[0][0]).toBe(cmd);
@@ -53,13 +53,13 @@ describe("docker plugin helpers test", () => {
   });
 
   describe("isFile test", () => {
-    it("should call isFile on object with path", () => {
+    it("should call isFile on object with path", async () => {
       const path = "path";
 
-      helpers.isFile(path);
+      await helpers.isFile(path);
 
-      expect(fs.lstatSync).toHaveBeenCalledTimes(1);
-      expect(fs.lstatSync).toHaveBeenCalledWith(path);
+      expect(fs.lstat).toHaveBeenCalledTimes(1);
+      expect(fs.lstat).toHaveBeenCalledWith(path);
       expect(mockIsFile).toHaveBeenCalledTimes(1);
     });
   });

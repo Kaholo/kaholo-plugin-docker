@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Integration with Docker CLI.",
   "category": [
     "CLOUD",
@@ -192,10 +192,10 @@
         },
         {
           "name": "url",
-          "viewName": "Registry (optional)",
+          "viewName": "Registry URL",
           "type": "string",
           "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "docker.io",
+          "placeholder": "https://registry-1.docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
@@ -244,8 +244,32 @@
     },
     {
       "name": "cmdExec",
-      "viewName": "Docker cmd",
+      "viewName": "Docker Command",
       "params": [
+        {
+          "name": "USER",
+          "viewName": "Username",
+          "type": "string",
+          "description": "The username of the Docker user used to authenticate for this request.",
+          "placeholder": "username",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "PASSWORD",
+          "viewName": "Password",
+          "type": "vault",
+          "description": "The password of the Docker user used to authenticate for this request.",
+          "placeholder": "pass1234!",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
+        {
+          "name": "registryUrl",
+          "viewName": "Registry URL",
+          "type": "string",
+          "description": "URL of the docker registry.",
+          "placeholder": "https://registry-1.docker.io",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+        },
         {
           "name": "PARAMS",
           "viewName": "Docker Command",

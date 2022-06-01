@@ -1,6 +1,6 @@
+const { lstat } = require("fs/promises");
 const childProcess = require("child_process");
 const { promisify } = require("util");
-const { lstatSync } = require("fs");
 
 const exec = promisify(childProcess.exec);
 
@@ -30,7 +30,7 @@ function streamFollow(stream, docker) {
   });
 }
 
-async function execCmd(cmd, environmentVariables = {}) {
+async function execCommand(cmd, environmentVariables = {}) {
   const { stdout, stderr } = await exec(cmd, { env: environmentVariables });
   if (stderr) {
     console.error(stderr);
@@ -39,9 +39,9 @@ async function execCmd(cmd, environmentVariables = {}) {
   return stdout;
 }
 
-function isFile(path) {
+async function isFile(filePath) {
   try {
-    const stat = lstatSync(path);
+    const stat = await lstat(filePath);
     return stat.isFile();
   } catch (error) {
     console.error(error);
@@ -49,10 +49,21 @@ function isFile(path) {
   }
 }
 
+const getLoginEnvironmentVariables = (username, password) => ({
+  KAHOLO_DOCKER_PLUGIN_USER: username,
+  KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
+});
+
+const createDockerLoginCommand = (registryUrl) => (
+  `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
+);
+
 module.exports = {
   getUrl,
   mapParamsToAuthConfig,
   streamFollow,
-  execCmd,
+  execCommand,
   isFile,
+  getLoginEnvironmentVariables,
+  createDockerLoginCommand,
 };
