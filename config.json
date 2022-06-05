@@ -18,7 +18,8 @@
     "push",
     "pull",
     "tag",
-    "repository"
+    "repository",
+    "cli"
   ],
   "methods": [
     {
