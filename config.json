@@ -5,35 +5,20 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "1.3.0",
-  "description": "Integration with Docker CLI.",
+  "version": "1.3.1",
+  "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
-    "CLOUD",
-    "CONTAINERS"
+    "Containers"
   ],
   "keywords": [
     "cloud",
     "container",
     "image",
     "docker",
-    "repo",
+    "push",
+    "pull",
+    "tag",
     "repository"
-  ],
-  "settings": [
-    {
-      "name": "USER",
-      "viewName": "User",
-      "type": "string",
-      "description": "The username of the default Docker user used for Docker commands that require that.",
-      "placeholder": "username"
-    },
-    {
-      "name": "PASSWORD",
-      "viewName": "Password",
-      "type": "vault",
-      "description": "The password of the default Docker user used for Docker commands that require that.",
-      "placeholder": "pass1234!"
-    }
   ],
   "methods": [
     {
