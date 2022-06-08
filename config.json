@@ -102,7 +102,8 @@
           "type": "string",
           "description": "The username of the Docker user used to authenticate for this request.",
           "placeholder": "username",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
         },
         {
           "name": "PASSWORD",
@@ -110,7 +111,8 @@
           "type": "vault",
           "description": "The password of the Docker user used to authenticate for this request.",
           "placeholder": "pass1234!",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
         },
         {
           "name": "IMAGE",
@@ -149,7 +151,8 @@
           "type": "string",
           "description": "The username of the Docker user used to authenticate for this request.",
           "placeholder": "username",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
         },
         {
           "name": "PASSWORD",
@@ -157,7 +160,8 @@
           "type": "vault",
           "description": "The password of the Docker user used to authenticate for this request.",
           "placeholder": "pass1234!",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
+          "required": true
         },
         {
           "name": "image",
