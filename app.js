@@ -74,20 +74,16 @@ async function pushImage({
   const environmentVariables = getLoginEnvironmentVariables(username, password);
 
   const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
-  const result = await execCommand(command, environmentVariables);
-
-  return result;
+  return execCommand(command, environmentVariables);
 }
 
 async function tag({
-  SOURCEIMAGE: sourceRegistry,
-  SOURCEIMAGETAG: sourceImageTag,
-  NEWIMAGE: newRegistry,
-  NEWIMAGETAG: newImageTag,
+  sourceImage,
+  targetImage,
 }) {
-  const image = docker.getImage(`${sourceRegistry}/${sourceImageTag}`);
+  const command = `docker tag ${sourceImage} ${targetImage}`;
 
-  return image.tag({ repo: `${newRegistry}/${newImageTag}` });
+  return execCommand(command);
 }
 
 async function cmdExec({
