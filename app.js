@@ -42,25 +42,6 @@ async function pull({
     );
 }
 
-async function pushImageToPrivateRepo({
-  IMAGETAG: imageTag,
-  IMAGE: imageRepo,
-  URL: url,
-  ...authParams
-}) {
-  const authConfig = mapParamsToAuthConfig(authParams);
-  const imageUrl = getUrl(url, imageRepo, imageTag);
-
-  const image = docker.getImage(`${imageRepo}:${imageTag}`);
-  await image.tag({ repo: imageUrl });
-
-  const imageToPush = docker.getImage(imageUrl);
-
-  return imageToPush
-    .push({ authconfig: authConfig, registry: imageUrl })
-    .then((stream) => streamFollow(stream, docker));
-}
-
 async function pushImage({
   image,
   imageTag,
@@ -115,7 +96,6 @@ async function cmdExec({
 module.exports = kaholoPluginLibrary.bootstrap({
   build,
   pull,
-  push: pushImageToPrivateRepo,
   pushImage,
   tag,
   cmdExec,
