@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -89,55 +89,6 @@
           "description": "If specified, pull the image from the specified registry/repository. By default will use the Docker Hub registry.",
           "placeholder": "docker.io",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
-        }
-      ]
-    },
-    {
-      "name": "push",
-      "viewName": "Push Image to Private Repo",
-      "params": [
-        {
-          "name": "USER",
-          "viewName": "Username",
-          "type": "string",
-          "description": "The username of the Docker user used to authenticate for this request.",
-          "placeholder": "username",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
-          "required": true
-        },
-        {
-          "name": "PASSWORD",
-          "viewName": "Password",
-          "type": "vault",
-          "description": "The password of the Docker user used to authenticate for this request.",
-          "placeholder": "pass1234!",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
-          "required": true
-        },
-        {
-          "name": "IMAGE",
-          "viewName": "Image Name",
-          "type": "string",
-          "description": "The name of the image to push.",
-          "placeholder": "kaholo",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
-          "required": true
-        },
-        {
-          "name": "IMAGETAG",
-          "viewName": "Image Tag",
-          "type": "string",
-          "description": "The tag/version of the image to push. By default will use 'latest'.",
-          "placeholder": "1.0.0",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
-        },
-        {
-          "name": "URL",
-          "viewName": "Registry (optional)",
-          "type": "string",
-          "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "docker.io",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
     },

@@ -99,58 +99,20 @@ describe("docker plugin test", () => {
     });
   });
 
-  describe("push", () => {
-    it("should call docker push", async () => {
-      const action = {
-        params: {
-          USER: "username",
-          PASSWORD: "password",
-          URL: "url",
-          IMAGE: "image",
-          IMAGETAG: "image-tag",
-          TAG: "tag",
-        },
-        method: { name: "push" },
-      };
-      const settings = {};
-      const auth = getAuth();
-      const url = getUrl();
-
-      await app.push(action, settings);
-
-      expect(mockDockerGetImage).toHaveBeenCalledTimes(2);
-      expect(mockDockerGetImage).toHaveBeenCalledWith(`${action.params.IMAGE}:${action.params.IMAGETAG}`);
-      expect(mockDockerGetImage).toHaveBeenCalledWith(url);
-
-      expect(mockImageTag).toHaveBeenCalledTimes(1);
-      expect(mockImageTag).toHaveBeenCalledWith({ repo: url });
-
-      expect(mockImagePush).toHaveBeenCalledTimes(1);
-      expect(mockImagePush).toHaveBeenCalledWith({ authconfig: auth, registry: url });
-    });
-  });
-
   describe("tag", () => {
     it("should tag docker image", async () => {
       const action = {
         params: {
-          NEWIMAGE: "image",
-          NEWIMAGETAG: "image-tag",
-          SOURCEIMAGE: "sourceimage",
-          SOURCEIMAGETAG: "sourceimage-tag",
+          targetImage: "image:image-tag",
+          sourceImage: "sourceimage:sourceimage-tag",
         },
         method: { name: "tag" },
       };
-
       const settings = {};
 
-      await app.tag(action, settings);
+      const output = await app.tag(action, settings);
 
-      expect(mockDockerGetImage).toHaveBeenCalledTimes(1);
-      expect(mockDockerGetImage).toHaveBeenCalledWith(`${action.params.SOURCEIMAGE}/${action.params.SOURCEIMAGETAG}`);
-
-      expect(mockImageTag).toHaveBeenCalledTimes(1);
-      expect(mockImageTag.mock.calls[0][0]).toStrictEqual({ repo: `${action.params.NEWIMAGE}/${action.params.NEWIMAGETAG}` });
+      expect(output).toStrictEqual("Operation finished successfully!");
     });
   });
 
