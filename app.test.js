@@ -1,16 +1,13 @@
-const mockImagePush = jest.fn(() => Promise.resolve());
-const mockImageTag = jest.fn(() => Promise.resolve());
-
-const mockDockerGetImage = jest.fn(() => ({
+const mockImagePush = () => Promise.resolve();
+const mockImageTag = () => Promise.resolve();
+const mockDockerGetImage = () => ({
   push: mockImagePush,
   tag: mockImageTag,
-}));
-
+});
 const mockDockerPull = jest.fn(() => Promise.resolve());
 
 const helpers = require("./helpers");
 const app = require("./app");
-const { getAuth, getUrl } = require("./helpers");
 
 jest.mock("dockerode", () => jest.fn().mockImplementation(() => ({
   getImage: mockDockerGetImage,
@@ -29,7 +26,6 @@ jest.mock("./helpers", () => ({
     username: authParams.USER,
     password: authParams.PASSWORD,
   })),
-  getUrl: jest.fn(() => "url:image:tag"),
   deleteConfigFile: jest.fn(),
   streamFollow: jest.fn(),
 }));
@@ -38,8 +34,13 @@ describe("docker plugin test", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   describe("build", () => {
     it("should return docker build command with path", async () => {
+      helpers.isFile.mockImplementation(() => false);
+
+      const cmd = "docker build -t tag path/path/file";
+
       const action = {
         params: {
           TAG: "tag",
@@ -48,9 +49,6 @@ describe("docker plugin test", () => {
         method: { name: "build" },
       };
       const settings = {};
-
-      const cmd = "docker build -t tag path/path/file";
-      helpers.isFile.mockImplementation(() => false);
       await app.build(action, settings);
 
       expect(helpers.execCommand).toHaveBeenCalledTimes(1);
@@ -58,6 +56,10 @@ describe("docker plugin test", () => {
     });
 
     it("it should return docker build command with current directory", async () => {
+      helpers.isFile.mockImplementation(() => true);
+
+      const cmd = "docker build -t tag .";
+
       const action = {
         params: {
           TAG: "tag",
@@ -66,9 +68,6 @@ describe("docker plugin test", () => {
         method: { name: "build" },
       };
       const settings = {};
-
-      const cmd = "docker build -t tag .";
-      helpers.isFile.mockImplementation(() => true);
       await app.build(action, settings);
 
       expect(helpers.execCommand).toHaveBeenCalledTimes(1);
@@ -78,24 +77,26 @@ describe("docker plugin test", () => {
 
   describe("pull", () => {
     it("should call docker pull", async () => {
+      const image = "url:443/image:tag";
+      const auth = {
+        username: "username",
+        password: "password",
+      };
+
       const action = {
         params: {
-          USER: "username",
-          PASSWORD: "password",
-          URL: "url",
-          IMAGE: "image",
-          TAG: "tag",
+          USER: auth.username,
+          PASSWORD: auth.password,
+          image,
         },
         method: { name: "pull" },
       };
       const settings = {};
 
       await app.pull(action, settings);
-      const auth = getAuth();
-      const url = getUrl();
 
       expect(mockDockerPull).toHaveBeenCalledTimes(1);
-      expect(mockDockerPull).toHaveBeenCalledWith(url, { authconfig: auth });
+      expect(mockDockerPull).toHaveBeenCalledWith(image, { authconfig: auth });
     });
   });
 

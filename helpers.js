@@ -4,8 +4,10 @@ const { promisify } = require("util");
 
 const exec = promisify(childProcess.exec);
 
-function getUrl(url, image, tag) {
-  return `${url ? `${url}/` : ""}${image}:${tag || "latest"}`;
+const REGISTRY_URL_REGEX = /^(?:localhost|(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+(?::\d+)?)\//;
+
+function extractRegistryUrl(image) {
+  return image.match(REGISTRY_URL_REGEX)?.[0];
 }
 
 function mapParamsToAuthConfig(authParams) {
@@ -59,11 +61,11 @@ const createDockerLoginCommand = (registryUrl) => (
 );
 
 module.exports = {
-  getUrl,
   mapParamsToAuthConfig,
   streamFollow,
   execCommand,
   isFile,
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
+  extractRegistryUrl,
 };
