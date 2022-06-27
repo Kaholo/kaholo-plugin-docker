@@ -12,8 +12,6 @@ const helpers = require("./helpers");
 const app = require("./app");
 const { getAuth, getUrl } = require("./helpers");
 
-const OPERATION_FINISHED_SUCCESFULLY_MESSAGE = "Operation finished successfully!";
-
 jest.mock("dockerode", () => jest.fn().mockImplementation(() => ({
   getImage: mockDockerGetImage,
   pull: mockDockerPull,
@@ -114,7 +112,7 @@ describe("docker plugin test", () => {
 
       const output = await app.tag(action, settings);
 
-      expect(output).toStrictEqual(OPERATION_FINISHED_SUCCESFULLY_MESSAGE);
+      expect(output).toStrictEqual("Operation finished successfully!");
     });
   });
 
