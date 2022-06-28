@@ -23,7 +23,7 @@ function standardizeImage(image) {
     standardizedImage += `docker.io/${image}`;
   }
 
-  if (!/:[a-z0-9-_]+$/i.test(image)) {
+  if (!/:[a-z0-9-_]+$/i.test(image) && !/@\w+:\w+/.test(image)) {
     standardizedImage += ":latest";
   }
 
