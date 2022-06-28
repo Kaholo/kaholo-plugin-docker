@@ -1,33 +1,11 @@
-const mockImagePush = () => Promise.resolve();
-const mockImageTag = () => Promise.resolve();
-const mockDockerGetImage = () => ({
-  push: mockImagePush,
-  tag: mockImageTag,
-});
-const mockDockerPull = jest.fn(() => Promise.resolve());
-
 const helpers = require("./helpers");
 const app = require("./app");
 
-jest.mock("dockerode", () => jest.fn().mockImplementation(() => ({
-  getImage: mockDockerGetImage,
-  pull: mockDockerPull,
-})));
-
 jest.mock("./helpers", () => ({
-  __esModule: true,
-  isFile: jest.fn(),
+  ...jest.requireActual("./helpers"),
   execCommand: jest.fn(),
-  getAuth: jest.fn(() => ({
-    username: "username",
-    password: "password",
-  })),
-  mapParamsToAuthConfig: jest.fn((authParams) => ({
-    username: authParams.USER,
-    password: authParams.PASSWORD,
-  })),
-  deleteConfigFile: jest.fn(),
-  streamFollow: jest.fn(),
+  logToActivityLog: jest.fn(),
+  isFile: jest.fn(),
 }));
 
 describe("docker plugin test", () => {
@@ -77,7 +55,7 @@ describe("docker plugin test", () => {
 
   describe("pull", () => {
     it("should call docker pull", async () => {
-      const image = "url:443/image:tag";
+      const image = "example.com:443/image:tag";
       const auth = {
         username: "username",
         password: "password",
@@ -95,8 +73,45 @@ describe("docker plugin test", () => {
 
       await app.pull(action, settings);
 
-      expect(mockDockerPull).toHaveBeenCalledTimes(1);
-      expect(mockDockerPull).toHaveBeenCalledWith(image, { authconfig: auth });
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith(
+        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443/ -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker pull example.com:443/image:tag",
+        {
+          KAHOLO_DOCKER_PLUGIN_PASSWORD: auth.password,
+          KAHOLO_DOCKER_PLUGIN_USER: auth.username,
+        },
+      );
+    });
+  });
+
+  describe("push", () => {
+    it("should call docker push", async () => {
+      const image = "example.com:443/image:tag";
+      const auth = {
+        username: "username",
+        password: "password",
+      };
+
+      const action = {
+        params: {
+          USER: auth.username,
+          PASSWORD: auth.password,
+          image,
+        },
+        method: { name: "pull" },
+      };
+      const settings = {};
+
+      await app.pushImage(action, settings);
+
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith(
+        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443/ -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker push example.com:443/image:tag",
+        {
+          KAHOLO_DOCKER_PLUGIN_PASSWORD: auth.password,
+          KAHOLO_DOCKER_PLUGIN_USER: auth.username,
+        },
+      );
     });
   });
 
@@ -114,6 +129,8 @@ describe("docker plugin test", () => {
       const output = await app.tag(action, settings);
 
       expect(output).toStrictEqual("Operation finished successfully!");
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith("docker tag sourceimage:sourceimage-tag image:image-tag");
     });
   });
 

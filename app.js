@@ -1,17 +1,14 @@
 const kaholoPluginLibrary = require("@kaholo/plugin-library");
-const Docker = require("dockerode");
 const path = require("path");
 const {
-  mapParamsToAuthConfig,
-  streamFollow,
-  execCommand,
-  isFile,
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   extractRegistryUrl,
+  logToActivityLog,
+  standardizeImage,
+  execCommand,
+  isFile,
 } = require("./helpers");
-
-const docker = new Docker();
 
 async function build({
   TAG: imageTag,
@@ -28,13 +25,23 @@ async function build({
 
 async function pull({
   image,
-  ...authParams
+  USER: username,
+  PASSWORD: password,
 }) {
-  const authConfig = mapParamsToAuthConfig(authParams);
+  const environmentVariables = getLoginEnvironmentVariables(username, password);
+  const standardizedImage = standardizeImage(image);
+  const dockerPullCommand = `docker pull ${standardizedImage}`;
 
-  return docker
-    .pull(image, { authconfig: authConfig })
-    .then((stream) => streamFollow(stream, docker));
+  const registryUrl = extractRegistryUrl(image);
+  const command = (
+    (username && password)
+      ? `${createDockerLoginCommand(registryUrl)} && ${dockerPullCommand}`
+      : dockerPullCommand
+  );
+
+  logToActivityLog(`Generated command: ${command}`);
+
+  return execCommand(command, environmentVariables);
 }
 
 async function pushImage({
@@ -42,11 +49,14 @@ async function pushImage({
   USER: username,
   PASSWORD: password,
 }) {
-  const dockerPushCommand = `docker push ${image}`;
+  const standardizedImage = standardizeImage(image);
+  const dockerPushCommand = `docker push ${standardizedImage}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
 
   const registryUrl = extractRegistryUrl(image);
   const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
+
+  logToActivityLog(`Generated command: ${command}`);
 
   return execCommand(command, environmentVariables);
 }
