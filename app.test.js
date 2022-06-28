@@ -82,6 +82,23 @@ describe("docker plugin test", () => {
         },
       );
     });
+
+    it("should call docker pull with no authentication", async () => {
+      const image = "example.com:443/image:tag";
+
+      const action = {
+        params: {
+          image,
+        },
+        method: { name: "pull" },
+      };
+      const settings = {};
+
+      await app.pull(action, settings);
+
+      expect(helpers.execCommand).toHaveBeenCalledTimes(1);
+      expect(helpers.execCommand).toHaveBeenCalledWith("docker pull example.com:443/image:tag", {});
+    });
   });
 
   describe("push", () => {
@@ -98,7 +115,7 @@ describe("docker plugin test", () => {
           PASSWORD: auth.password,
           image,
         },
-        method: { name: "pull" },
+        method: { name: "pushImage" },
       };
       const settings = {};
 
