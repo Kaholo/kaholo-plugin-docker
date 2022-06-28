@@ -39,7 +39,7 @@ describe("docker plugin helpers test", () => {
   });
 
   describe("extractRegistryUrl", () => {
-    const expectedImageUrls = [
+    const expectedRegistryUrlForImagePairs = [
       ["docker.io/google/cloud-sdk", "docker.io/"],
       ["docker.io/google/cloud-sdk:latest", "docker.io/"],
       ["google/cloud-sdk", undefined],
@@ -56,8 +56,22 @@ describe("docker plugin helpers test", () => {
       ["node", undefined],
     ];
 
-    expectedImageUrls.forEach(([image, expectedUrl]) => {
+    expectedRegistryUrlForImagePairs.forEach(([image, expectedUrl]) => {
       expect(helpers.extractRegistryUrl(image)).toStrictEqual(expectedUrl);
+    });
+  });
+
+  describe("standardizeImage", () => {
+    const expectedStandardizedImagePairs = [
+      ["example.com/test:latest", "example.com/test:latest"],
+      ["test:latest", "docker.io/test:latest"],
+      ["alpine", "docker.io/alpine:latest"],
+      ["test@sha256:1234567890abcdef", "docker.io/test@sha256:1234567890abcdef"],
+      ["example.com:443/test", "example.com:443/test:latest"],
+    ];
+
+    expectedStandardizedImagePairs.forEach(([image, expectedStandardizedImage]) => {
+      expect(helpers.standardizeImage(image)).toStrictEqual(expectedStandardizedImage);
     });
   });
 });
