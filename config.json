@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -24,7 +24,7 @@
   "methods": [
     {
       "name": "build",
-      "viewName": "Build docker image",
+      "viewName": "Build Image",
       "params": [
         {
           "name": "PATH",
@@ -66,29 +66,13 @@
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         },
         {
-          "name": "IMAGE",
-          "viewName": "Image Name",
+          "name": "image",
+          "viewName": "Image",
           "type": "string",
-          "description": "The name of the image to pull.",
-          "placeholder": "kaholo",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/",
+          "description": "Docker-style URL:port/repository:tag string, where URL, port, and tag default (if excluded) to docker.io, 443, and latest, respectively.",
+          "placeholder": "mydockerrepos.myorg.com:8088/dev/builds/myproject:1.0.0",
+          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
           "required": true
-        },
-        {
-          "name": "TAG",
-          "viewName": "Image Tag",
-          "type": "string",
-          "description": "The tag/version of the image to pull. By default will use 'latest'.",
-          "placeholder": "1.0.0",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
-        },
-        {
-          "name": "URL",
-          "viewName": "Registry (optional)",
-          "type": "string",
-          "description": "If specified, pull the image from the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "docker.io",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_pull/"
         }
       ]
     },
@@ -116,28 +100,12 @@
         },
         {
           "name": "image",
-          "viewName": "Image Name",
+          "viewName": "Image",
           "type": "string",
-          "description": "The name of the image to push.",
-          "placeholder": "kaholo",
+          "description": "Docker-style URL:port/repository:tag string, where URL, port, and tag default (if excluded) to docker.io, 443, and latest, respectively.",
+          "placeholder": "mydockerrepos.myorg.com:8088/dev/builds/myproject:1.0.0",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/",
           "required": true
-        },
-        {
-          "name": "imageTag",
-          "viewName": "Image Tag",
-          "type": "string",
-          "description": "The tag/version of the image to push. By default will use 'latest'.",
-          "placeholder": "1.0.0",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
-        },
-        {
-          "name": "url",
-          "viewName": "Registry URL",
-          "type": "string",
-          "description": "If specified, push the image to the specified registry/repository. By default will use the Docker Hub registry.",
-          "placeholder": "https://registry-1.docker.io",
-          "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_push/"
         }
       ]
     },
@@ -167,7 +135,7 @@
     },
     {
       "name": "cmdExec",
-      "viewName": "Docker Command",
+      "viewName": "Run Docker Command",
       "params": [
         {
           "name": "USER",
@@ -195,7 +163,7 @@
         },
         {
           "name": "PARAMS",
-          "viewName": "Docker Command",
+          "viewName": "Command",
           "type": "string",
           "description": "The docker command to run. No need to specify 'docker' in the start of the command.",
           "placeholder": "build https://github.com/docker/rootfs.git#container:docker",

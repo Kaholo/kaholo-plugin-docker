@@ -4,30 +4,34 @@ const { promisify } = require("util");
 
 const exec = promisify(childProcess.exec);
 
-function getUrl(url, image, tag) {
-  return `${url ? `${url}/` : ""}${image}:${tag || "latest"}`;
+const REGISTRY_URL_REGEX = /^(?:localhost|(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+(?::\d+)?)\//;
+
+function logToActivityLog(message) {
+  // TODO: Change console.error to console.info
+  // Right now (Kaholo v4.3.2) console.info
+  // does not print messages to Activity Log
+  // Jira ticket: https://kaholo.atlassian.net/browse/KAH-3636
+  console.error(message);
 }
 
-function mapParamsToAuthConfig(authParams) {
-  return {
-    username: authParams.USER,
-    password: authParams.PASSWORD,
-  };
+function standardizeImage(image) {
+  let standardizedImage = "";
+
+  if (REGISTRY_URL_REGEX.test(image)) {
+    standardizedImage += image;
+  } else {
+    standardizedImage += `docker.io/${image}`;
+  }
+
+  if (!/:[a-z0-9-_]+$/i.test(image) && !/@\w+:\w+/.test(image)) {
+    standardizedImage += ":latest";
+  }
+
+  return standardizedImage;
 }
 
-function streamFollow(stream, docker) {
-  return new Promise((resolve, reject) => {
-    docker.modem.followProgress(stream, (err, res) => {
-      if (err) {
-        return reject(err);
-      }
-      const cmdOutput = res.reduce(
-        (accumulatedCmd, singleResult) => accumulatedCmd + singleResult.status,
-        "",
-      );
-      return resolve({ output: cmdOutput });
-    });
-  });
+function extractRegistryUrl(image) {
+  return image.match(REGISTRY_URL_REGEX)?.[0];
 }
 
 async function execCommand(cmd, environmentVariables = {}) {
@@ -49,21 +53,27 @@ async function isFile(filePath) {
   }
 }
 
-const getLoginEnvironmentVariables = (username, password) => ({
-  KAHOLO_DOCKER_PLUGIN_USER: username,
-  KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
-});
+function getLoginEnvironmentVariables(username, password) {
+  if (!username || !password) {
+    return {};
+  }
+
+  return {
+    KAHOLO_DOCKER_PLUGIN_USER: username,
+    KAHOLO_DOCKER_PLUGIN_PASSWORD: password,
+  };
+}
 
 const createDockerLoginCommand = (registryUrl) => (
   `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
 );
 
 module.exports = {
-  getUrl,
-  mapParamsToAuthConfig,
-  streamFollow,
-  execCommand,
-  isFile,
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
+  extractRegistryUrl,
+  logToActivityLog,
+  standardizeImage,
+  execCommand,
+  isFile,
 };

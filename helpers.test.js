@@ -15,32 +15,6 @@ jest.mock("fs/promises", () => ({
 }));
 
 describe("docker plugin helpers test", () => {
-  describe("getUrl test", () => {
-    it("should return valid url for a given url, image and tag", () => {
-      const url = "url";
-      const image = "image";
-      const tag = "tag";
-
-      expect(helpers.getUrl(url, image, tag)).toBe("url/image:tag");
-    });
-
-    it("should return valid url for a empty url, image and tag", () => {
-      const url = "";
-      const image = "image";
-      const tag = "tag";
-
-      expect(helpers.getUrl(url, image, tag)).toBe("image:tag");
-    });
-
-    it("should return valid url for a given url, image and no tag", () => {
-      const url = "url";
-      const image = "image";
-      const tag = "";
-
-      expect(helpers.getUrl(url, image, tag)).toBe("url/image:latest");
-    });
-  });
-
   describe("execCommand test", () => {
     it("should execute a command", () => {
       const cmd = "test command";
@@ -61,6 +35,43 @@ describe("docker plugin helpers test", () => {
       expect(fs.lstat).toHaveBeenCalledTimes(1);
       expect(fs.lstat).toHaveBeenCalledWith(path);
       expect(mockIsFile).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("extractRegistryUrl", () => {
+    const expectedRegistryUrlForImagePairs = [
+      ["docker.io/google/cloud-sdk", "docker.io/"],
+      ["docker.io/google/cloud-sdk:latest", "docker.io/"],
+      ["google/cloud-sdk", undefined],
+      ["docker.io/alpine", "docker.io/"],
+      ["docker.io:80/alpine", "docker.io:80/"],
+      ["asia-southeast1-docker.pkg.dev/kaholo-charlie/kaholo-docker/hashstrings:0.0.3", "asia-southeast1-docker.pkg.dev/"],
+      ["asia-southeast1-docker.pkg.dev:8080/kaholo-charlie/kaholo-docker/hashstrings:0.0.3", "asia-southeast1-docker.pkg.dev:8080/"],
+      ["localhost/alpine:latest", "localhost/"],
+      ["kaholoio/kaholo", undefined],
+      ["orchard-services.nova-ten.com:8088/hash/hashtest@sha256:ed0d24bd95e07b420f44ecf046aa780d597b586791383ea8c98d6965c70bfa28", "orchard-services.nova-ten.com:8088/"],
+      ["delfer/alpine-ftp-server", undefined],
+      ["willhallonline/ansible", undefined],
+      ["amazon/aws-cli", undefined],
+      ["node", undefined],
+    ];
+
+    expectedRegistryUrlForImagePairs.forEach(([image, expectedUrl]) => {
+      expect(helpers.extractRegistryUrl(image)).toStrictEqual(expectedUrl);
+    });
+  });
+
+  describe("standardizeImage", () => {
+    const expectedStandardizedImagePairs = [
+      ["example.com/test:latest", "example.com/test:latest"],
+      ["test:latest", "docker.io/test:latest"],
+      ["alpine", "docker.io/alpine:latest"],
+      ["test@sha256:1234567890abcdef", "docker.io/test@sha256:1234567890abcdef"],
+      ["example.com:443/test", "example.com:443/test:latest"],
+    ];
+
+    expectedStandardizedImagePairs.forEach(([image, expectedStandardizedImage]) => {
+      expect(helpers.standardizeImage(image)).toStrictEqual(expectedStandardizedImage);
     });
   });
 });
