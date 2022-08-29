@@ -1,4 +1,7 @@
-const kaholoPluginLibrary = require("@kaholo/plugin-library");
+const {
+  bootstrap,
+  docker,
+} = require("@kaholo/plugin-library");
 const path = require("path");
 const {
   getLoginEnvironmentVariables,
@@ -21,6 +24,21 @@ async function build({
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
   return execCommand(cmd);
+}
+
+async function run({
+  imageName,
+  command,
+  environmentalVariables,
+  workingDirectory,
+}) {
+  const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+
+  const cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+  return execCommand(cmd, {
+    ...process.env,
+    ...environmentalVariables,
+  });
 }
 
 async function pull({
@@ -96,8 +114,9 @@ async function cmdExec({
   return result;
 }
 
-module.exports = kaholoPluginLibrary.bootstrap({
+module.exports = bootstrap({
   build,
+  run,
   pull,
   pushImage,
   tag,

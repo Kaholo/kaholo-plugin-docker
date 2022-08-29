@@ -46,6 +46,46 @@
       ]
     },
     {
+      "name": "run",
+      "viewName": "Run Image",
+      "params": [
+        {
+          "name": "imageName",
+          "viewName": "Image name",
+          "type": "string",
+          "description": "Name of the docker image to run",
+          "placeholder": "alpine",
+          "learnUrl": "https://docs.docker.com/engine/reference/run/",
+          "required": true
+        },
+        {
+          "name": "command",
+          "viewName": "Docker command",
+          "type": "string",
+          "description": "Command to be executed by the image",
+          "learnUrl": "https://docs.docker.com/engine/reference/run/",
+          "required": false
+        },
+        {
+          "name": "environmentalVariables",
+          "viewName": "Environmental variables",
+          "type": "text",
+          "parserType": "object",
+          "description": "JSON object representing the environmental variables to use",
+          "placeholder": "{\n   \"key\":\"value\"\n}",
+          "required": false
+        },
+        {
+          "name": "workingDirectory",
+          "viewName": "Working directory",
+          "type": "string",
+          "default": "/twiddlebug/workspace/",
+          "placeholder": "/twiddlebug/workspace/",
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "pull",
       "viewName": "Pull Image",
       "params": [

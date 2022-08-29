@@ -35,7 +35,9 @@ function extractRegistryUrl(image) {
 }
 
 async function execCommand(cmd, environmentVariables = {}) {
-  const { stdout, stderr } = await exec(cmd, { env: environmentVariables });
+  const result = await exec(cmd, { env: environmentVariables });
+
+  const { stdout, stderr } = result;
   if (stderr) {
     console.error(stderr);
   }
