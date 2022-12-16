@@ -6,9 +6,8 @@ const path = require("path");
 const {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
-  extractRegistryUrl,
+  parseDockerImageString,
   logToActivityLog,
-  standardizeImage,
   execCommand,
   isFile,
 } = require("./helpers");
@@ -47,13 +46,12 @@ async function pull({
   PASSWORD: password,
 }) {
   const environmentVariables = getLoginEnvironmentVariables(username, password);
-  const standardizedImage = standardizeImage(image);
-  const dockerPullCommand = `docker pull ${standardizedImage}`;
+  const parsedImage = parseDockerImageString(image);
+  const dockerPullCommand = `docker pull ${parsedImage.imagestring}`;
 
-  const registryUrl = extractRegistryUrl(image);
   const command = (
     (username && password)
-      ? `${createDockerLoginCommand(registryUrl)} && ${dockerPullCommand}`
+      ? `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPullCommand}`
       : dockerPullCommand
   );
 
@@ -67,12 +65,11 @@ async function pushImage({
   USER: username,
   PASSWORD: password,
 }) {
-  const standardizedImage = standardizeImage(image);
-  const dockerPushCommand = `docker push ${standardizedImage}`;
+  const parsedImage = parseDockerImageString(image);
+  const dockerPushCommand = `docker push ${parsedImage.imagestring}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
 
-  const registryUrl = extractRegistryUrl(image);
-  const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
+  const command = `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPushCommand}`;
 
   logToActivityLog(`Generated command: ${command}`);
 

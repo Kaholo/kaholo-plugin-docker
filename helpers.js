@@ -14,24 +14,74 @@ function logToActivityLog(message) {
   console.error(message);
 }
 
-function standardizeImage(image) {
-  let standardizedImage = "";
+function parseDockerImageString(imagestring) {
+  let hostport, host, port, user, repotagdig, repo, tag, digest;
+  let partsArray = [];
+  let parts = 0;
 
-  if (REGISTRY_URL_REGEX.test(image)) {
-    standardizedImage += image;
-  } else {
-    standardizedImage += `docker.io/${image}`;
+  // divide by "/" into 1-3 distinct parts
+  partsArray = imagestring.split("/");
+  parts = partsArray.length;
+
+  switch (parts) {
+      case 1: {
+          repotagdig = partsArray[0];
+          break;
+      }
+      case 2: {
+          // partOne is either hostport or user
+          if (partsArray[0].includes(".") || partsArray[0].includes(":") || partsArray[0] == "localhost") {
+              hostport = partsArray[0];
+          } else {
+              user = partsArray[0];
+          }
+          repotagdig = partsArray[1];
+          break;
+      }
+      case 3: {
+          hostport = partsArray[0];
+          user = partsArray[1];
+          repotagdig = partsArray[2];
+          break;
+      }
+      default: {
+          throw ("A docker image string may contain 0-2 \"/\" characters.");
+      }
   }
 
-  if (!/:[a-z0-9-_]+$/i.test(image) && !/@\w+:\w+/.test(image)) {
-    standardizedImage += ":latest";
+  if (hostport) {
+      if (hostport.includes(":")) {
+          host = hostport.split(":")[0];
+          port = hostport.split(":")[1];
+      } else {
+          host = hostport;
+      }
   }
 
-  return standardizedImage;
-}
+  if (repotagdig) {
+      if (repotagdig.includes("@")) {
+          repo = repotagdig.split("@")[0];
+          digest = "@" + repotagdig.split("@")[1];
+      } else if (repotagdig.includes(":")) {
+          repo = repotagdig.split(":")[0];
+          tag = repotagdig.split(":")[1];
+      } else {
+          repo = repotagdig;
+      }
+  }
 
-function extractRegistryUrl(image) {
-  return image.match(REGISTRY_URL_REGEX)?.[0];
+  return {
+      "imagestring": imagestring,
+      "parts": parts,
+      "hostport": hostport || "",
+      "repotagdig": repotagdig || "",
+      "host": host || "",
+      "port": port || "",
+      "user": user || "",
+      "repo": repo || "",
+      "tag": tag || "",
+      "digest": digest || ""
+  }
 }
 
 async function execCommand(cmd, environmentVariables = {}) {
@@ -73,9 +123,8 @@ const createDockerLoginCommand = (registryUrl) => (
 module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
-  extractRegistryUrl,
+  parseDockerImageString,
   logToActivityLog,
-  standardizeImage,
   execCommand,
   isFile,
 };
