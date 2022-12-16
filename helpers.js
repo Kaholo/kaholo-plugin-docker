@@ -4,8 +4,6 @@ const { promisify } = require("util");
 
 const exec = promisify(childProcess.exec);
 
-const REGISTRY_URL_REGEX = /^(?:localhost|(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+(?::\d+)?)\//;
-
 function logToActivityLog(message) {
   // TODO: Change console.error to console.info
   // Right now (Kaholo v4.3.2) console.info
@@ -15,73 +13,69 @@ function logToActivityLog(message) {
 }
 
 function parseDockerImageString(imagestring) {
-  let hostport, host, port, user, repotagdig, repo, tag, digest;
-  let partsArray = [];
-  let parts = 0;
+  let hostport; let host; let port; let user;
+  let repotagdig; let repo; let tag; let digest;
 
   // divide by "/" into 1-3 distinct parts
-  partsArray = imagestring.split("/");
-  parts = partsArray.length;
+  const partsArray = imagestring.split("/");
+  const parts = partsArray.length;
 
   switch (parts) {
-      case 1: {
-          repotagdig = partsArray[0];
-          break;
+    case 1: {
+      [repotagdig] = partsArray;
+      break;
+    }
+    case 2: {
+      // partOne is either hostport or user
+      const [partOne, partTwo] = partsArray;
+      if (partOne.includes(".") || partOne.includes(":") || partOne === "localhost") {
+        hostport = partOne;
+      } else {
+        user = partOne;
       }
-      case 2: {
-          // partOne is either hostport or user
-          if (partsArray[0].includes(".") || partsArray[0].includes(":") || partsArray[0] == "localhost") {
-              hostport = partsArray[0];
-          } else {
-              user = partsArray[0];
-          }
-          repotagdig = partsArray[1];
-          break;
-      }
-      case 3: {
-          hostport = partsArray[0];
-          user = partsArray[1];
-          repotagdig = partsArray[2];
-          break;
-      }
-      default: {
-          throw ("A docker image string may contain 0-2 \"/\" characters.");
-      }
+      repotagdig = partTwo;
+      break;
+    }
+    case 3: {
+      [hostport, user, repotagdig] = partsArray;
+      break;
+    }
+    default: {
+      throw new Error("A docker image string may contain 0-2 \"/\" characters.");
+    }
   }
 
   if (hostport) {
-      if (hostport.includes(":")) {
-          host = hostport.split(":")[0];
-          port = hostport.split(":")[1];
-      } else {
-          host = hostport;
-      }
+    if (hostport.includes(":")) {
+      [host, port] = hostport.split(":");
+    } else {
+      host = hostport;
+    }
   }
 
   if (repotagdig) {
-      if (repotagdig.includes("@")) {
-          repo = repotagdig.split("@")[0];
-          digest = "@" + repotagdig.split("@")[1];
-      } else if (repotagdig.includes(":")) {
-          repo = repotagdig.split(":")[0];
-          tag = repotagdig.split(":")[1];
-      } else {
-          repo = repotagdig;
-      }
+    // check for digest first because it will include a ":"
+    if (repotagdig.includes("@")) {
+      [repo, digest] = repotagdig.split("@");
+    } else if (repotagdig.includes(":")) {
+      [repo, tag] = repotagdig.split(":");
+    } else {
+      repo = repotagdig;
+    }
   }
 
   return {
-      "imagestring": imagestring,
-      "parts": parts,
-      "hostport": hostport || "",
-      "repotagdig": repotagdig || "",
-      "host": host || "",
-      "port": port || "",
-      "user": user || "",
-      "repo": repo || "",
-      "tag": tag || "",
-      "digest": digest || ""
-  }
+    imagestring,
+    parts,
+    hostport: hostport || "",
+    repotagdig: repotagdig || "",
+    host: host || "",
+    port: port || "",
+    user: user || "",
+    repo: repo || "",
+    tag: tag || "",
+    digest: digest || "",
+  };
 }
 
 async function execCommand(cmd, environmentVariables = {}) {
