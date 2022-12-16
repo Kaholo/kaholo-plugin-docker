@@ -1,6 +1,7 @@
 const { lstat } = require("fs/promises");
 const childProcess = require("child_process");
 const { promisify } = require("util");
+const ShredFile = require("shredfile");
 
 const exec = promisify(childProcess.exec);
 
@@ -83,7 +84,7 @@ async function execCommand(cmd, environmentVariables = {}) {
   if (stderr) {
     console.error(stderr);
   }
-
+  await shredFile("/root/.docker/config.json");
   return stdout;
 }
 
@@ -94,6 +95,19 @@ async function isFile(filePath) {
   } catch (error) {
     console.error(error);
     throw error;
+  }
+}
+
+async function shredFile(filePath) {
+  const shredder = new ShredFile();
+  try {
+    const stat = await lstat(filePath);
+    if (stat.isFile) {
+      const shredded = await shredder.shred(filePath);
+      console.error(`Shredded credentials: ${shredded}`);
+    }
+  } catch (err) {
+    console.error("Could not shred credentials: package coreutils not installed on Kaholo agent? (command: apk add coreutils)");
   }
 }
 
