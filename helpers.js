@@ -36,12 +36,10 @@ function parseDockerImageString(imagestring) {
       repotagdig = partTwo;
       break;
     }
-    case 3: {
-      [hostport, user, repotagdig] = partsArray;
-      break;
-    }
     default: {
-      throw new Error("A docker image string may contain 0-2 \"/\" characters.");
+      hostport = imagestring.substring(0, imagestring.indexOf("/"));
+      user = imagestring.substring(imagestring.indexOf("/") + 1, imagestring.lastIndexOf("/"));
+      repotagdig = imagestring.substring(imagestring.lastIndexOf("/") + 1, imagestring.length);
     }
   }
 
@@ -67,14 +65,14 @@ function parseDockerImageString(imagestring) {
   return {
     imagestring,
     parts,
-    hostport: hostport || "",
-    repotagdig: repotagdig || "",
-    host: host || "",
-    port: port || "",
-    user: user || "",
-    repo: repo || "",
-    tag: tag || "",
-    digest: digest || "",
+    hostport,
+    repotagdig,
+    host,
+    port,
+    user,
+    repo,
+    tag,
+    digest,
   };
 }
 
