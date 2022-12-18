@@ -107,7 +107,10 @@ async function shredFile(filePath) {
       console.error(`Shredded credentials: ${shredded}`);
     }
   } catch (err) {
-    console.error("Could not shred credentials: package coreutils not installed on Kaholo agent? (command: apk add coreutils)");
+    if (err.code !== "ENOENT") {
+      // allow ENOENT to fail quietly - some docker commands do not use credentials
+      console.error("Could not shred credentials: package coreutils not installed on Kaholo agent? (command: apk add coreutils)");
+    }
   }
 }
 
