@@ -133,3 +133,5 @@ dist
 .pnp.*
 
 .kaholotmp/
+test.js
+*.zip
