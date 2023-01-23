@@ -98,20 +98,9 @@ async function isFile(filePath) {
   }
 }
 
-async function shredFile(filePath) {
-  const shredder = new ShredFile();
-  try {
-    const stat = await lstat(filePath);
-    if (stat.isFile) {
-      const shredded = await shredder.shred(filePath);
-      console.error(`Shredded credentials: ${shredded}`);
-    }
-  } catch (err) {
-    if (err.code !== "ENOENT") {
-      // allow ENOENT to fail quietly - some docker commands do not use credentials
-      console.error("Could not shred credentials: package coreutils not installed on Kaholo agent? (command: apk add coreutils)");
-    }
-  }
+async function shredFile(filepath) {
+  console.error(`\nShredding docker config in ${filepath}\n`);
+  return exec(`shred -u -n 3 -f ${filepath}`);
 }
 
 function getLoginEnvironmentVariables(username, password) {
