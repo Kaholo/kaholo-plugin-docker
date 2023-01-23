@@ -1,7 +1,6 @@
 const { lstat } = require("fs/promises");
 const childProcess = require("child_process");
 const { promisify } = require("util");
-const ShredFile = require("shredfile");
 
 const exec = promisify(childProcess.exec);
 
