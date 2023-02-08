@@ -98,8 +98,10 @@ async function isFile(filePath) {
 }
 
 async function shredFile(filepath) {
-  console.error(`\nShredding docker config in ${filepath}\n`);
-  return exec(`shred -u -n 3 -f ${filepath}`);
+  if (await pathExists(filepath)) {
+    console.error(`\nShredding docker config in ${filepath}\n`);
+    return exec(`shred -u -n 3 -f ${filepath}`);
+  }
 }
 
 function getLoginEnvironmentVariables(username, password) {
@@ -116,6 +118,15 @@ function getLoginEnvironmentVariables(username, password) {
 const createDockerLoginCommand = (registryUrl) => (
   `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
 );
+
+async function pathExists(path) {
+  try {
+    await access(path, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 module.exports = {
   getLoginEnvironmentVariables,
