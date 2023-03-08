@@ -16,7 +16,7 @@
     "jest": "27.5.0"
   },
   "dependencies": {
-    "@kaholo/plugin-library": "^2.1.2",
+    "@kaholo/plugin-library": "github:Kaholo/kaholo-plugin-library#6d52642cf32b415dfba838808b9e48767a874210",
     "child_process": "1.0.2"
   }
 }

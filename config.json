@@ -33,7 +33,11 @@
           "description": "Absolute path of the directory containing the Dockerfile to build the image from.",
           "placeholder": "/home/username/",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
-          "required": true
+          "required": true,
+          "parserType": "filePath",
+          "parserOptions": {
+            "throwIfDoesntExist": true
+          }
         },
         {
           "name": "TAG",
@@ -81,7 +85,11 @@
           "type": "string",
           "default": "/twiddlebug/workspace/",
           "placeholder": "/twiddlebug/workspace/",
-          "required": true
+          "required": true,
+          "parserType": "filePath",
+          "parserOptions": {
+            "throwIfDoesntExist": true
+          }
         }
       ]
     },
