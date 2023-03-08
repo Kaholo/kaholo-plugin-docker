@@ -70,7 +70,7 @@
           "name": "environmentalVariables",
           "viewName": "Environmental variables",
           "type": "text",
-          "parserType": "object",
+          "parserType": "keyValuePairs",
           "description": "JSON object representing the environmental variables to use",
           "placeholder": "{\n   \"key\":\"value\"\n}",
           "required": false
