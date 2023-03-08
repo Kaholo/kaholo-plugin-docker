@@ -145,15 +145,18 @@ async function isFile(filePath) {
 }
 
 async function shredFile(filePath) {
+  let stat;
   try {
-    const stat = await lstat(filePath);
-    if (stat.isFile()) {
-      console.error(`\nShredding docker config in ${filePath}\n`);
-      return exec(`shred -u -n 3 -f ${filePath}`);  
-    }
+    stat = await lstat(filePath);
   } catch {
-    return;
+    return {};
   }
+  if (!stat.isFile()) {
+    return {};
+  }
+
+  console.error(`\nShredding docker config in ${filePath}\n`);
+  return exec(`shred -u -n 3 -f ${filePath}`);
 }
 
 function getLoginEnvironmentVariables(username, password) {
