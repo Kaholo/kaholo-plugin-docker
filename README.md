@@ -38,7 +38,7 @@ This is the tag for the docker image being built - at minimum usually the reposi
 ## Method: Run Image
 This method runs a docker image. For example if a specific build server image, `builder001` has been created with method Docker Build, one might use this method to run it in order to build a maven project with command `mvn package`. This is particularly useful when specific version of packages or other uncommon components are required to execute a task. Another common use case is when a product or service is provided at a docker image, for example the Oracle Cloud CLI. Since there is no Kaholo Oracle CLI plugin, you could use this plugin to run the image instead, executing any Oracle Cloud CLI command without installing it or its dependencies on the Kaholo agent.
 
-Note this method is meant to run an image to accomplish some task, which then exits and the container is deleted. Please do not use this method to deploy applications that run indefinitely on the Kaholo agent. To deploy an image for indefinite use, have a dedicated server and use the [SSH Plugin](https://github.com/Kaholo/kaholo-plugin-ssh/releases)to run command `docker run` there, or deploy the image to Kubernetes using the [Kubernetes Plugin](https://github.com/Kaholo/kaholo-plugin-kubernetes/releases).
+Note this method is meant to run an image to accomplish some task, which then exits and the container is destroyed to free resources on the Kaholo agent. Please do not use this method to deploy applications that run indefinitely on the Kaholo agent. To deploy an image for indefinite use, have a dedicated server and use the [SSH Plugin](https://github.com/Kaholo/kaholo-plugin-ssh/releases) to run command `docker run` there, or deploy the image to Kubernetes using the [Kubernetes Plugin](https://github.com/Kaholo/kaholo-plugin-kubernetes/releases).
 
 ### Parameter: Image
 This is the image to run as a docker container. At minimum it must be a repo name, e.g. `alpine` or image ID `1ee71564b1f2`, but may include any of the things discussed above in section [Docker Tags](#docker-tags).
@@ -107,5 +107,5 @@ Should the docker registry require authentication to run the docker command, spe
 ### Parameter: Registry URL
 Should the docker registry require authentication to run the docker command, specify the URL of the registry here. For example, `https://nexus-a.kaholodemo.net`. If left emtpy, `https://registry-1.docker.io` is assumed.
 
-### parameter: Docker Command
+### Parameter: Docker Command
 The actual command to run. It must begin with `docker`. To run commands that are NOT `docker` commands, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases).
