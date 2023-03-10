@@ -85,7 +85,7 @@
           "type": "string",
           "default": "/twiddlebug/workspace/",
           "placeholder": "/twiddlebug/workspace/",
-          "required": true,
+          "required": false,
           "parserType": "filePath",
           "parserOptions": {
             "throwIfDoesntExist": true
