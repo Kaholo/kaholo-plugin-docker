@@ -31,7 +31,6 @@ async function run({
   environmentalVariables,
   workingDirectory,
 }) {
-
   let cmd;
 
   if (environmentalVariables) {
@@ -40,7 +39,7 @@ async function run({
   } else {
     cmd = `docker run --rm --workdir ${workingDirectory} ${imageName} ${command}`;
   }
-  
+
   return execCommand(cmd, {
     ...process.env,
     ...(environmentalVariables || {}),
