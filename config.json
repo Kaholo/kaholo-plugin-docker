@@ -71,8 +71,8 @@
           "viewName": "Environmental variables",
           "type": "text",
           "parserType": "keyValuePairs",
-          "description": "JSON object representing the environmental variables to use",
-          "placeholder": "{\n   \"key\":\"value\"\n}",
+          "description": "Optional one-per-line key=value pairs for the container's environment",
+          "placeholder": "DEPLOYMODE=Test",
           "required": false
         },
         {
