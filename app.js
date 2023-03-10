@@ -9,16 +9,15 @@ const {
   parseDockerImageString,
   logToActivityLog,
   execCommand,
-  isFile,
 } = require("./helpers");
 
 async function build({
   TAG: imageTag,
-  PATH: buildPath,
+  PATH: buildPathInfo,
 }) {
-  let inputPath = buildPath;
-  if (await isFile(buildPath)) {
-    inputPath = path.dirname(buildPath);
+  let inputPath = buildPathInfo.absolutePath;
+  if (buildPathInfo.type !== "directory") {
+    inputPath = path.dirname(buildPathInfo.absolutePath);
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
@@ -29,10 +28,14 @@ async function run({
   imageName,
   command,
   environmentalVariables,
-  workingDirectory,
+  workingDirectory: workingDirectoryInfo,
 }) {
-  let cmd;
+  const workingDirectory = workingDirectoryInfo.absolutePath;
+  if (workingDirectoryInfo.type !== "directory") {
+    throw new Error(`Path needs to point to a directory, provided path type: "${workingDirectoryInfo.type}"`);
+  }
 
+  let cmd;
   if (environmentalVariables) {
     const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
     cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
