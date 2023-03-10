@@ -31,12 +31,18 @@ async function run({
   environmentalVariables,
   workingDirectory,
 }) {
-  const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+  let cmd;
 
-  const cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+  if (environmentalVariables) {
+    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+    cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+  } else {
+    cmd = `docker run --rm --workdir ${workingDirectory} ${imageName} ${command}`;
+  }
+
   return execCommand(cmd, {
     ...process.env,
-    ...environmentalVariables,
+    ...(environmentalVariables || {}),
   });
 }
 
