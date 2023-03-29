@@ -1,26 +1,52 @@
-const kaholoPluginLibrary = require("@kaholo/plugin-library");
+const {
+  bootstrap,
+  docker,
+} = require("@kaholo/plugin-library");
 const path = require("path");
 const {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
-  extractRegistryUrl,
+  parseDockerImageString,
   logToActivityLog,
-  standardizeImage,
   execCommand,
-  isFile,
 } = require("./helpers");
 
 async function build({
   TAG: imageTag,
-  PATH: buildPath,
+  PATH: buildPathInfo,
 }) {
-  let inputPath = buildPath;
-  if (await isFile(buildPath)) {
-    inputPath = path.dirname(buildPath);
+  let inputPath = buildPathInfo.absolutePath;
+  if (buildPathInfo.type !== "directory") {
+    inputPath = path.dirname(buildPathInfo.absolutePath);
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
   return execCommand(cmd);
+}
+
+async function run({
+  imageName,
+  command,
+  environmentalVariables,
+  workingDirectory: workingDirectoryInfo,
+}) {
+  const workingDirectory = workingDirectoryInfo.absolutePath;
+  if (workingDirectoryInfo.type !== "directory") {
+    throw new Error(`Path needs to point to a directory, provided path type: "${workingDirectoryInfo.type}"`);
+  }
+
+  let cmd;
+  if (environmentalVariables) {
+    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+    cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+  } else {
+    cmd = `docker run --rm --workdir ${workingDirectory} ${imageName} ${command}`;
+  }
+
+  return execCommand(cmd, {
+    ...process.env,
+    ...(environmentalVariables || {}),
+  });
 }
 
 async function pull({
@@ -29,13 +55,12 @@ async function pull({
   PASSWORD: password,
 }) {
   const environmentVariables = getLoginEnvironmentVariables(username, password);
-  const standardizedImage = standardizeImage(image);
-  const dockerPullCommand = `docker pull ${standardizedImage}`;
+  const parsedImage = parseDockerImageString(image);
+  const dockerPullCommand = `docker pull ${parsedImage.imagestring}`;
 
-  const registryUrl = extractRegistryUrl(image);
   const command = (
     (username && password)
-      ? `${createDockerLoginCommand(registryUrl)} && ${dockerPullCommand}`
+      ? `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPullCommand}`
       : dockerPullCommand
   );
 
@@ -49,12 +74,11 @@ async function pushImage({
   USER: username,
   PASSWORD: password,
 }) {
-  const standardizedImage = standardizeImage(image);
-  const dockerPushCommand = `docker push ${standardizedImage}`;
+  const parsedImage = parseDockerImageString(image);
+  const dockerPushCommand = `docker push ${parsedImage.imagestring}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
 
-  const registryUrl = extractRegistryUrl(image);
-  const command = `${createDockerLoginCommand(registryUrl)} && ${dockerPushCommand}`;
+  const command = `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPushCommand}`;
 
   logToActivityLog(`Generated command: ${command}`);
 
@@ -96,8 +120,9 @@ async function cmdExec({
   return result;
 }
 
-module.exports = kaholoPluginLibrary.bootstrap({
+module.exports = bootstrap({
   build,
+  run,
   pull,
   pushImage,
   tag,

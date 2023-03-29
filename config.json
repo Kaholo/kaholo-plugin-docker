@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -33,7 +33,11 @@
           "description": "Absolute path of the directory containing the Dockerfile to build the image from.",
           "placeholder": "/home/username/",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
-          "required": true
+          "required": true,
+          "parserType": "filePath",
+          "parserOptions": {
+            "throwIfDoesntExist": true
+          }
         },
         {
           "name": "TAG",
@@ -42,6 +46,50 @@
           "description": "If specified, tag the new Docker image with the specified tag.",
           "placeholder": "kaholo:1.0.0",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_tag/"
+        }
+      ]
+    },
+    {
+      "name": "run",
+      "viewName": "Run Image",
+      "params": [
+        {
+          "name": "imageName",
+          "viewName": "Image name",
+          "type": "string",
+          "description": "Name of the docker image to run",
+          "placeholder": "alpine",
+          "learnUrl": "https://docs.docker.com/engine/reference/run/",
+          "required": true
+        },
+        {
+          "name": "command",
+          "viewName": "Docker command",
+          "type": "string",
+          "description": "Command to be executed by the image",
+          "learnUrl": "https://docs.docker.com/engine/reference/run/",
+          "required": false
+        },
+        {
+          "name": "environmentalVariables",
+          "viewName": "Environment variables",
+          "type": "text",
+          "parserType": "keyValuePairs",
+          "description": "Optional one-per-line key=value pairs for the container's environment",
+          "placeholder": "DEPLOYMODE=Test",
+          "required": false
+        },
+        {
+          "name": "workingDirectory",
+          "viewName": "Working directory",
+          "type": "string",
+          "default": "/twiddlebug/workspace/",
+          "placeholder": "/twiddlebug/workspace/",
+          "required": false,
+          "parserType": "filePath",
+          "parserOptions": {
+            "throwIfDoesntExist": true
+          }
         }
       ]
     },

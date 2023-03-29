@@ -75,7 +75,7 @@ describe("docker plugin test", () => {
 
       expect(helpers.execCommand).toHaveBeenCalledTimes(1);
       expect(helpers.execCommand).toHaveBeenCalledWith(
-        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443/ -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker pull example.com:443/image:tag",
+        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443 -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker pull example.com:443/image:tag",
         {
           KAHOLO_DOCKER_PLUGIN_PASSWORD: auth.password,
           KAHOLO_DOCKER_PLUGIN_USER: auth.username,
@@ -123,7 +123,7 @@ describe("docker plugin test", () => {
 
       expect(helpers.execCommand).toHaveBeenCalledTimes(1);
       expect(helpers.execCommand).toHaveBeenCalledWith(
-        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443/ -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker push example.com:443/image:tag",
+        "echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login example.com:443 -u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin && docker push example.com:443/image:tag",
         {
           KAHOLO_DOCKER_PLUGIN_PASSWORD: auth.password,
           KAHOLO_DOCKER_PLUGIN_USER: auth.username,
