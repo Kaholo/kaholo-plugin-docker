@@ -72,7 +72,7 @@
         },
         {
           "name": "environmentalVariables",
-          "viewName": "Environmental variables",
+          "viewName": "Environment variables",
           "type": "text",
           "parserType": "keyValuePairs",
           "description": "Optional one-per-line key=value pairs for the container's environment",
