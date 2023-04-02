@@ -64,7 +64,7 @@
         },
         {
           "name": "command",
-          "viewName": "Docker command",
+          "viewName": "Command",
           "type": "string",
           "description": "Command to be executed by the image",
           "learnUrl": "https://docs.docker.com/engine/reference/run/",
