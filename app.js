@@ -32,15 +32,15 @@ async function run({
 }) {
   const workingDirectory = workingDirectoryInfo.absolutePath;
   if (workingDirectoryInfo.type !== "directory") {
-    throw new Error(`Path needs to point to a directory, provided path type: "${workingDirectoryInfo.type}"`);
+    throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
   }
 
   let cmd;
   if (environmentalVariables) {
     const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
-    cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+    cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   } else {
-    cmd = `docker run --rm --workdir ${workingDirectory} ${imageName} ${command}`;
+    cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   }
 
   return execCommand(cmd, {
