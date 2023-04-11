@@ -83,13 +83,13 @@
           "name": "workingDirectory",
           "viewName": "Working directory",
           "type": "string",
-          "default": "/twiddlebug/workspace/",
           "placeholder": "/twiddlebug/workspace/",
-          "required": false,
           "parserType": "filePath",
           "parserOptions": {
             "throwIfDoesntExist": true
-          }
+          },
+          "description": "Directory on Kaholo agent that will be mounted by container and be the working directory within the container",
+          "required": false
         }
       ]
     },
