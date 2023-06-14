@@ -4,7 +4,7 @@ const childProcess = require("child_process");
 
 async function exec(command, cmdOptions = {}, options = {}) {
   const {
-    onProgressFn = console.info.bind(console),
+    onProgressFn = process.stdout.write.bind(process.stdout),
   } = options;
 
   let childProcessError;
