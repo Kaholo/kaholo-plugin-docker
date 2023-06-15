@@ -30,9 +30,9 @@ async function run(params) {
     imageName,
     command,
     environmentalVariables,
-    workingDirectory: workingDirectoryInfo = helpers.analyzePath("./"),
   } = params;
 
+  const workingDirectoryInfo = params.workingDirectory || await helpers.analyzePath("./");
   const workingDirectory = workingDirectoryInfo.absolutePath;
   if (workingDirectoryInfo.type !== "directory") {
     throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
