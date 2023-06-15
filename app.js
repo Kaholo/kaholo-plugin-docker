@@ -1,6 +1,7 @@
 const {
   bootstrap,
   docker,
+  helpers,
 } = require("@kaholo/plugin-library");
 const path = require("path");
 const {
@@ -24,12 +25,14 @@ async function build({
   return execCommand(cmd);
 }
 
-async function run({
-  imageName,
-  command,
-  environmentalVariables,
-  workingDirectory: workingDirectoryInfo,
-}) {
+async function run(params) {
+  const {
+    imageName,
+    command,
+    environmentalVariables,
+    workingDirectory: workingDirectoryInfo = helpers.analyzePath("./"),
+  } = params;
+
   const workingDirectory = workingDirectoryInfo.absolutePath;
   if (workingDirectoryInfo.type !== "directory") {
     throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
