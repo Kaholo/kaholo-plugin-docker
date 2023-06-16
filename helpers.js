@@ -1,52 +1,37 @@
 const { lstat } = require("fs/promises");
 const util = require("util");
 const childProcess = require("child_process");
+const constants = require("./consts.json");
 
 async function exec(command, cmdOptions = {}, options = {}) {
   const {
     onProgressFn = process.stdout.write.bind(process.stdout),
   } = options;
 
-  let childProcessError;
   let childProcessInstance;
   try {
     childProcessInstance = childProcess.exec(command, cmdOptions);
   } catch (error) {
-    return { error };
+    throw new Error(error);
   }
 
-  const outputChunks = [];
-
   childProcessInstance.stdout.on("data", (data) => {
-    outputChunks.push({ type: "stdout", data });
-
     onProgressFn?.(data);
   });
   childProcessInstance.stderr.on("data", (data) => {
-    outputChunks.push({ type: "stderr", data });
-
     onProgressFn?.(data);
   });
   childProcessInstance.on("error", (error) => {
-    childProcessError = error;
+    throw new Error(error);
   });
 
   try {
     await util.promisify(childProcessInstance.on.bind(childProcessInstance))("close");
   } catch (error) {
-    childProcessError = error;
+    throw new Error(error);
   }
 
-  const outputObject = outputChunks.reduce((acc, cur) => ({
-    ...acc,
-    [cur.type]: `${acc[cur.type]}\n${cur.data.toString()}`,
-  }), { stdout: "", stderr: "" });
-
-  if (childProcessError) {
-    outputObject.error = childProcessError;
-  }
-
-  return outputObject;
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 function logToActivityLog(message) {
@@ -122,16 +107,8 @@ function parseDockerImageString(imagestring) {
 }
 
 async function execCommand(cmd, environmentVariables = {}) {
-  const { stdout, stderr, error } = await exec(cmd, { env: environmentVariables });
-
-  if (error) {
-    throw error;
-  }
-  if (stderr) {
-    console.error(stderr);
-  }
+  await exec(cmd, { env: environmentVariables });
   await shredFile("/root/.docker/config.json");
-  return stdout;
 }
 
 async function isFile(filePath) {

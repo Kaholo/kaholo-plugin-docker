@@ -25,6 +25,7 @@
     {
       "name": "build",
       "viewName": "Build Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "PATH",
@@ -36,7 +37,8 @@
           "required": true,
           "parserType": "filePath",
           "parserOptions": {
-            "throwIfDoesntExist": true
+            "throwIfDoesntExist": true,
+            "acceptedTypes": ["directory"]
           }
         },
         {
