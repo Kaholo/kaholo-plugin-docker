@@ -7,8 +7,8 @@ const {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   parseDockerImageString,
-  logToActivityLog,
   execCommand,
+  getDockerImage,
 } = require("./helpers");
 const constants = require("./consts.json");
 
@@ -23,7 +23,11 @@ async function build({
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${buildPathInfo.absolutePath}`;
-  return execCommand(cmd);
+  await execCommand(cmd);
+  if (imageTag) {
+    return getDockerImage(imageTag);
+  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 async function run(params) {
@@ -61,7 +65,7 @@ async function pull({
   const environmentVariables = getLoginEnvironmentVariables(username, password);
   const parsedImage = parseDockerImageString(image);
   const dockerPullCommand = `docker pull ${parsedImage.imagestring}`;
-  const credentialsGiven = (username && password)
+  const credentialsGiven = (username && password);
 
   const command = (
     (credentialsGiven)
@@ -69,8 +73,9 @@ async function pull({
       : dockerPullCommand
   );
 
-  logToActivityLog(`Running command: ${command}`);
-  return execCommand(command, environmentVariables, credentialsGiven);
+  console.info(`Running command: ${command}`);
+  await execCommand(command, environmentVariables, credentialsGiven);
+  return getDockerImage(parsedImage.imagestring);
 }
 
 async function pushImage({
@@ -85,7 +90,7 @@ async function pushImage({
 
   const command = `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPushCommand}`;
 
-  logToActivityLog(`Running command: ${command}`);
+  console.info(`Running command: ${command}`);
 
   return execCommand(command, environmentVariables, credentialsGiven);
 }
@@ -96,7 +101,8 @@ async function tag({
 }) {
   const command = `docker tag ${sourceImage} ${targetImage}`;
 
-  return execCommand(command);
+  await execCommand(command);
+  return getDockerImage(targetImage);
 }
 
 async function cmdExec({

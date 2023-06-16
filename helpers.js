@@ -1,7 +1,10 @@
-const { lstat } = require("fs/promises");
 const util = require("util");
 const childProcess = require("child_process");
+const { helpers } = require("@kaholo/plugin-library");
+
 const constants = require("./consts.json");
+
+const simpleExec = util.promisify(childProcess.exec);
 
 async function exec(command, cmdOptions = {}, options = {}) {
   const {
@@ -32,14 +35,6 @@ async function exec(command, cmdOptions = {}, options = {}) {
   }
 
   return constants.EMPTY_RETURN_VALUE;
-}
-
-function logToActivityLog(message) {
-  // TODO: Change console.error to console.info
-  // Right now (Kaholo v4.3.2) console.info
-  // does not print messages to Activity Log
-  // Jira ticket: https://kaholo.atlassian.net/browse/KAH-3636
-  console.error(message);
 }
 
 function parseDockerImageString(imagestring) {
@@ -106,7 +101,7 @@ function parseDockerImageString(imagestring) {
   };
 }
 
-async function execCommand(cmd, environmentVariables = {}, shred) {
+async function execCommand(cmd, environmentVariables = {}, shred = false) {
   if (shred) {
     try {
       await exec(cmd, { env: environmentVariables });
@@ -114,35 +109,28 @@ async function execCommand(cmd, environmentVariables = {}, shred) {
     } catch (error) {
       await shredFile("/root/.docker/config.json");
       throw new Error(error);
-    } 
+    }
   } else {
     return exec(cmd, { env: environmentVariables });
   }
-}
-
-async function isFile(filePath) {
-  try {
-    const stat = await lstat(filePath);
-    return stat.isFile();
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 async function shredFile(filePath) {
-  let stat;
-  try {
-    stat = await lstat(filePath);
-  } catch {
-    return {};
+  const shredFilePathInfo = await helpers.analyzePath(filePath);
+  if (shredFilePathInfo.exists && shredFilePathInfo.type === "file") {
+    console.error(`\nShredding credentials in ${filePath}\n`);
+    return exec(`shred -u -n 3 -f ${filePath}`);
   }
-  if (!stat.isFile()) {
-    return {};
-  }
+  return constants.EMPTY_RETURN_VALUE;
+}
 
-  console.error(`\nShredding credentials in ${filePath}\n`);
-  return exec(`shred -u -n 3 -f ${filePath}`);
+async function getDockerImage(tag) {
+  const { stdout, stderr } = await simpleExec(`docker image ls ${tag} --format "{{json . }}"`);
+  if (!stderr) {
+    return stdout;
+  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 function getLoginEnvironmentVariables(username, password) {
@@ -164,7 +152,6 @@ module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   parseDockerImageString,
-  logToActivityLog,
   execCommand,
-  isFile,
+  getDockerImage,
 };
