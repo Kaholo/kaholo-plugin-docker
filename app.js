@@ -23,8 +23,7 @@ async function build({
   }
 
   const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${buildPathInfo.absolutePath}`;
-  await execCommand(cmd);
-  return constants.EMPTY_RETURN_VALUE;
+  return execCommand(cmd);
 }
 
 async function run(params) {
@@ -62,16 +61,16 @@ async function pull({
   const environmentVariables = getLoginEnvironmentVariables(username, password);
   const parsedImage = parseDockerImageString(image);
   const dockerPullCommand = `docker pull ${parsedImage.imagestring}`;
+  const credentialsGiven = (username && password)
 
   const command = (
-    (username && password)
+    (credentialsGiven)
       ? `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPullCommand}`
       : dockerPullCommand
   );
 
-  logToActivityLog(`Generated command: ${command}`);
-
-  return execCommand(command, environmentVariables);
+  logToActivityLog(`Running command: ${command}`);
+  return execCommand(command, environmentVariables, credentialsGiven);
 }
 
 async function pushImage({
@@ -82,12 +81,13 @@ async function pushImage({
   const parsedImage = parseDockerImageString(image);
   const dockerPushCommand = `docker push ${parsedImage.imagestring}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
+  const credentialsGiven = true; // required in config.json
 
   const command = `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPushCommand}`;
 
-  logToActivityLog(`Generated command: ${command}`);
+  logToActivityLog(`Running command: ${command}`);
 
-  return execCommand(command, environmentVariables);
+  return execCommand(command, environmentVariables, credentialsGiven);
 }
 
 async function tag({
@@ -107,12 +107,14 @@ async function cmdExec({
 }) {
   const commandsToExecute = [];
   let environmentVariables = {};
+  let shredCredentials = false;
 
   const useAuthentication = username && password;
 
   if (useAuthentication) {
     commandsToExecute.push(createDockerLoginCommand(registryUrl));
     environmentVariables = getLoginEnvironmentVariables(username, password);
+    shredCredentials = true;
   }
 
   const userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
@@ -120,9 +122,7 @@ async function cmdExec({
 
   const command = commandsToExecute.join(" && ");
 
-  const result = await execCommand(command, environmentVariables);
-
-  return result;
+  return execCommand(command, environmentVariables, shredCredentials);
 }
 
 module.exports = bootstrap({

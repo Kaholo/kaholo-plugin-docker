@@ -106,9 +106,18 @@ function parseDockerImageString(imagestring) {
   };
 }
 
-async function execCommand(cmd, environmentVariables = {}) {
-  await exec(cmd, { env: environmentVariables });
-  await shredFile("/root/.docker/config.json");
+async function execCommand(cmd, environmentVariables = {}, shred) {
+  if (shred) {
+    try {
+      await exec(cmd, { env: environmentVariables });
+      await shredFile("/root/.docker/config.json");
+    } catch (error) {
+      await shredFile("/root/.docker/config.json");
+      throw new Error(error);
+    } 
+  } else {
+    return exec(cmd, { env: environmentVariables });
+  }
 }
 
 async function isFile(filePath) {
@@ -132,7 +141,7 @@ async function shredFile(filePath) {
     return {};
   }
 
-  console.error(`\nShredding docker config in ${filePath}\n`);
+  console.error(`\nShredding credentials in ${filePath}\n`);
   return exec(`shred -u -n 3 -f ${filePath}`);
 }
 
