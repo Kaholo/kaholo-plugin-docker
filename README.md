@@ -21,7 +21,13 @@ The only methods potentially requiring authentication are methods Push Image and
 
 Would be pushed to the server at `nexus-a.kaholodemo.net`. For images tagged without specifying server, for example just `myapp`, Docker Hub is assumed to be the server. This is very similar to how Docker works at the command line.
 
-Docker authentication information is normally stored in file `~/.docker/config.json` when a command is run with authentication information. Subsequent commands can then work without providing further authentication. To avoid leaving such credentials on the Kaholo agent, this plugin uses command `shred` to security delete the file when the command has completed. This can be seen in the Activity log - `Shredding docker config in /root/.docker/config.json`.
+Docker authentication information is normally stored in file `~/.docker/config.json` when a command is run with authentication information. Subsequent commands can then work without providing further authentication. To avoid leaving such credentials on the Kaholo agent, this plugin uses command `shred` to security delete the file when the command has completed. This action can be seen as messages in the Activity log:
+
+    Login Succeeded
+    ...
+    Shredding credentials in /root/.docker/config.json
+
+If it is preferred to log in and stay that way, use method "Run Docker Command" to run `docker login` appropriately and then leave username and password empty in Actions that would normally require a login.
 
 ## Plugin Settings
 This plugin makes no use of plugin-level settings or Kaholo Accounts.
@@ -29,16 +35,35 @@ This plugin makes no use of plugin-level settings or Kaholo Accounts.
 ## Method: Build Image
 This method creates a new Docker image with a new tag from a Dockerfile. This is equivalent to command `docker image build`.
 
-### Parameter: Dockerfile Path
-This is the path to the directory containing a file named Dockerfile. This serves as both the working directory and to locate Dockerfile. A relative or absolute path may be used. If relative, it is relative to the default working directory on the Kaholo agent, e.g. `/twiddlebug/workspace`. To find the default working directory on any Kaholo agent, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases) to run command `pwd`.
+### Parameter: Working Directory
+This is the path to the directory containing a file named Dockerfile. A relative or absolute path may be used. If relative, it is relative to the default working directory on the Kaholo agent, e.g. `/twiddlebug/workspace`. To find the default working directory on any Kaholo agent, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases) to run command `pwd`.
+
+If you wish to use a file NOT named Dockerfile, e.g. Dockerfile.prod or Dockerfile.dev or build using a Dockerfile that is not in the build context (Working Directory), then use Method "Run Docker Command" instead. For example...
+
+   docker build -f dockerfiles/Dockerfile.debug -t myapp_debug .
 
 ### Parameter: Tag
-This is the tag for the docker image being built - at minimum usually the repository name, e.g. `myapp`, and often including a version, e.g. `myapp:1.2.0`.
+This is the tag for the docker image being built - at minimum usually the repository name, e.g. `myapp`, and often including a version, e.g. `myapp:1.2.0`. If no tag is provided, the image will be created with an ID only, e.g. `28e09682c387`. If a tag IS provided, the tag and other information about the image is provided in Final Result as a JSON document, which makes access to the details from the code layer easier. For example the size of the image might be `kaholo.actions.Docker1.result.Size`, were `Docker1` is the ID of the specific Action from which the result is to be obtained.
 
 ## Method: Run Image
-This method runs a docker image. For example if a specific build server image, `builder001` has been created with method Docker Build, one might use this method to run it in order to build a maven project with command `mvn package`. This is particularly useful when specific version of packages or other uncommon components are required to execute a task. Another common use case is when a product or service is provided at a docker image, for example the Oracle Cloud CLI. Since there is no Kaholo Oracle CLI plugin, you could use this plugin to run the image instead, executing any Oracle Cloud CLI command without installing it or its dependencies on the Kaholo agent.
+This method runs a docker image. For example if a specific build server image, `builder001` has been created with method Docker Build, one might use this method to run it in order to build a maven project with command `mvn package`. This is particularly useful when specific version of packages or other uncommon components are required to execute a task. Another common use case is when a product or service is provided at a docker image, for example the Oracle Cloud CLI. Since there is no Kaholo Oracle CLI plugin, one could use this plugin to run the image instead, executing any Oracle Cloud CLI command without installing it or its dependencies on the Kaholo agent.
 
 Note this method is meant to run an image to accomplish some task, which then exits and the container is destroyed to free resources on the Kaholo agent. Please do not use this method to deploy applications that run indefinitely on the Kaholo agent. To deploy an image for indefinite use, have a dedicated server and use the [SSH Plugin](https://github.com/Kaholo/kaholo-plugin-ssh/releases) to run command `docker run` there, or deploy the image to Kubernetes using the [Kubernetes Plugin](https://github.com/Kaholo/kaholo-plugin-kubernetes/releases).
+
+Example: Busybox loop
+
+    Method: Run Image
+    Params:
+    - Command: sh -c 'for i in $(seq 1 10); do echo "Output: $i"; sleep 1; done'
+    - Image name: busybox
+
+Configuration causes the plugin to run a docker command similar to running this at the command line:
+
+    docker run busybox sh -c 'for i in $(seq 1 10); do echo "Output: $i"; sleep 1; done'
+
+The actual command that it runs is a bit more complex, because it adds `--rm` to remove the container when the command completes, and mounts the working directory to accomodate commands that interact with the filesystem. These are benefits of using method Run Image instead of Run Docker Command.
+
+    docker run --rm -v '/twiddlebug/workspace':'/twiddlebug/workspace' --workdir '/twiddlebug/workspace' busybox sh -c 'for i in $(seq 1 10); do echo "Output: $i"; sleep 1; done'
 
 ### Parameter: Image
 This is the image to run as a docker container. At minimum it must be a repo name, e.g. `alpine` or image ID `1ee71564b1f2`, but may include any of the things discussed above in section [Docker Tags](#docker-tags).
@@ -59,6 +84,8 @@ The Working Directory is a path on the Kaholo agent that will be mounted as a Do
 
 ## Method: Pull Image
 This method pulls docker images. If an image is already present on the Kaholo agent it immediately succeeds. Otherwise it downloads the image to make it available on the Kaholo agent for downstream actions in the pipeline.
+
+Pull image provides information about the image pulled as a well-formed JSON document in Final Result. One might "pull" an image that is already present simply to get easy programmatic access to this result, For example the size of the image would be `kaholo.actions.Docker1.result.Size`, were `Docker1` is the ID of the specific Action pulling the image.
 
 ### Parameter: Username
 Should the docker registry require authentication to pull images, put the username here.
@@ -85,9 +112,13 @@ The tag of the image to push, using the expansive meaning of "tag" as explained 
 This method tags docker images. There are a few reasons this might be useful.
 * Giving an image a version number - suppose an image for `myapp` has been built and tested and is ready for release as version `1.3.0`. Use this method to tag the image `myapp:1.3.0`.
 * To push images to alternative repositories - following the same example, tag image `myapp` `nexus-a.kaholodemo.net/myapp:lastest` and then method Push Image can be used to push the image to server `nexus-a.kaholodemo.net`.
-* To "rename" images. If you have determined that to build a specify project named `myapp` you can use image `ubuntu:jammy-20220801`, you might wish to tag that image appropriately to `myapp-builder-20220801`. The original image with the original tag remains and nothing is copied, but this provides a logical way to organize images so, in this example, nobody has to memorize that to build `myapp` one should use image `ubuntu:jammy-20220801`.
+* To "rename" images. If a specify project named `myapp` is built using an image `ubuntu:jammy-20220801`, one might wish to tag that image appropriately as `myapp-builder-20220801`. The original image with the original tag remains and nothing is copied, but this provides a logical way to organize images so, in this example, nobody has to memorize that to build `myapp` one should use image `ubuntu:jammy-20220801`.
 
 In any case, tagging an image does not copy or move any images, it simply inserts another reference to existing images. This happens quickly and effortlessly. To actually copy or move images, use Method Pull Image to get sources, tag them, and then Push Image.
+
+If multiple images are tagged identically, the most recently tagged image causes the others to lose their tag. They still display the repo in the output of `docker image ls`, but the tag is column is left empty. To subsequently delete these tag-orphaned images, the image ID must be used instead - for example `docker image rm a4ff08005fa8`. A useful "Run Docker Command" command to delete all in one go, for example the repository name contains a unique string `abc123`, is 
+
+    docker image rm -f `docker image ls | grep abc123 | awk '{print $3}'`
 
 ### Parameter: Source Image
 The tag of an existing image or one to be automatically pulled, using the expansive meaning of "tag" as explained in above in section [Docker Tags](#docker-tags).
@@ -97,6 +128,12 @@ The new tag of the image, using the expansive meaning of "tag" as explained in a
 
 ## Method: Run Docker Command
 This method allows one to generically run any command that begins with `docker`. The main purpose is to cover any docker functionality that is not covered already by the other more user-friendly methods. If authentication is not required, for example running `docker image ls`, then the first three parameters can be left unconfigured.
+
+Example: Busybox loop
+
+    Method: Run Docker Command
+    Params:
+    - Command: docker run --rm busybox sh -c 'for i in $(seq 1 10); do echo "Output: $i"; sleep 1; done'
 
 ### Parameter: Username
 Should the docker registry require authentication to run the docker command, put the username here.
