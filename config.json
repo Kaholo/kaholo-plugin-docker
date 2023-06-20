@@ -25,6 +25,7 @@
     {
       "name": "build",
       "viewName": "Build Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "PATH",
@@ -36,7 +37,8 @@
           "required": true,
           "parserType": "filePath",
           "parserOptions": {
-            "throwIfDoesntExist": true
+            "throwIfDoesntExist": true,
+            "acceptedTypes": ["directory"]
           }
         },
         {
@@ -52,6 +54,7 @@
     {
       "name": "run",
       "viewName": "Run Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "imageName",
@@ -96,6 +99,7 @@
     {
       "name": "pull",
       "viewName": "Pull Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",
@@ -127,6 +131,7 @@
     {
       "name": "pushImage",
       "viewName": "Push Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",
@@ -160,6 +165,7 @@
     {
       "name": "tag",
       "viewName": "Tag image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "sourceImage",
@@ -184,6 +190,7 @@
     {
       "name": "cmdExec",
       "viewName": "Run Docker Command",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",
