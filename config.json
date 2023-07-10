@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -25,18 +25,20 @@
     {
       "name": "build",
       "viewName": "Build Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "PATH",
           "viewName": "Dockerfile Path",
           "type": "string",
-          "description": "Absolute path of the directory containing the Dockerfile to build the image from.",
-          "placeholder": "/home/username/",
+          "description": "Path to a directory containing a Dockerfile",
+          "placeholder": "myrepo/docker",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
           "required": true,
           "parserType": "filePath",
           "parserOptions": {
-            "throwIfDoesntExist": true
+            "throwIfDoesntExist": true,
+            "acceptedTypes": ["directory"]
           }
         },
         {
@@ -52,6 +54,7 @@
     {
       "name": "run",
       "viewName": "Run Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "imageName",
@@ -64,7 +67,7 @@
         },
         {
           "name": "command",
-          "viewName": "Docker command",
+          "viewName": "Command",
           "type": "string",
           "description": "Command to be executed by the image",
           "learnUrl": "https://docs.docker.com/engine/reference/run/",
@@ -83,19 +86,20 @@
           "name": "workingDirectory",
           "viewName": "Working directory",
           "type": "string",
-          "default": "/twiddlebug/workspace/",
           "placeholder": "/twiddlebug/workspace/",
-          "required": false,
           "parserType": "filePath",
           "parserOptions": {
             "throwIfDoesntExist": true
-          }
+          },
+          "description": "Directory on Kaholo agent that will be mounted by container and be the working directory within the container",
+          "required": false
         }
       ]
     },
     {
       "name": "pull",
       "viewName": "Pull Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",
@@ -127,6 +131,7 @@
     {
       "name": "pushImage",
       "viewName": "Push Image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",
@@ -160,6 +165,7 @@
     {
       "name": "tag",
       "viewName": "Tag image",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "sourceImage",
@@ -184,6 +190,7 @@
     {
       "name": "cmdExec",
       "viewName": "Run Docker Command",
+      "allowEmptyResult": true,
       "params": [
         {
           "name": "USER",

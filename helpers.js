@@ -1,60 +1,40 @@
-const { lstat } = require("fs/promises");
 const util = require("util");
 const childProcess = require("child_process");
+const { helpers } = require("@kaholo/plugin-library");
+
+const constants = require("./consts.json");
+
+const simpleExec = util.promisify(childProcess.exec);
 
 async function exec(command, cmdOptions = {}, options = {}) {
   const {
-    onProgressFn = console.info.bind(console),
+    onProgressFn = process.stdout.write.bind(process.stdout),
   } = options;
 
-  let childProcessError;
   let childProcessInstance;
   try {
     childProcessInstance = childProcess.exec(command, cmdOptions);
   } catch (error) {
-    return { error };
+    throw new Error(error);
   }
 
-  const outputChunks = [];
-
   childProcessInstance.stdout.on("data", (data) => {
-    outputChunks.push({ type: "stdout", data });
-
     onProgressFn?.(data);
   });
   childProcessInstance.stderr.on("data", (data) => {
-    outputChunks.push({ type: "stderr", data });
-
     onProgressFn?.(data);
   });
   childProcessInstance.on("error", (error) => {
-    childProcessError = error;
+    throw new Error(error);
   });
 
   try {
     await util.promisify(childProcessInstance.on.bind(childProcessInstance))("close");
   } catch (error) {
-    childProcessError = error;
+    throw new Error(error);
   }
 
-  const outputObject = outputChunks.reduce((acc, cur) => ({
-    ...acc,
-    [cur.type]: `${acc[cur.type]}\n${cur.data.toString()}`,
-  }), { stdout: "", stderr: "" });
-
-  if (childProcessError) {
-    outputObject.error = childProcessError;
-  }
-
-  return outputObject;
-}
-
-function logToActivityLog(message) {
-  // TODO: Change console.error to console.info
-  // Right now (Kaholo v4.3.2) console.info
-  // does not print messages to Activity Log
-  // Jira ticket: https://kaholo.atlassian.net/browse/KAH-3636
-  console.error(message);
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 function parseDockerImageString(imagestring) {
@@ -121,42 +101,36 @@ function parseDockerImageString(imagestring) {
   };
 }
 
-async function execCommand(cmd, environmentVariables = {}) {
-  const { stdout, stderr, error } = await exec(cmd, { env: environmentVariables });
-
-  if (error) {
-    throw error;
+async function execCommand(cmd, environmentVariables = {}, shred = false) {
+  if (shred) {
+    try {
+      await exec(cmd, { env: environmentVariables });
+      await shredFile("/root/.docker/config.json");
+    } catch (error) {
+      await shredFile("/root/.docker/config.json");
+      throw new Error(error);
+    }
+  } else {
+    return exec(cmd, { env: environmentVariables });
   }
-  if (stderr) {
-    console.error(stderr);
-  }
-  await shredFile("/root/.docker/config.json");
-  return stdout;
-}
-
-async function isFile(filePath) {
-  try {
-    const stat = await lstat(filePath);
-    return stat.isFile();
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 async function shredFile(filePath) {
-  let stat;
-  try {
-    stat = await lstat(filePath);
-  } catch {
-    return {};
+  const shredFilePathInfo = await helpers.analyzePath(filePath);
+  if (shredFilePathInfo.exists && shredFilePathInfo.type === "file") {
+    console.error(`\nShredding credentials in ${filePath}\n`);
+    return exec(`shred -u -n 3 -f ${filePath}`);
   }
-  if (!stat.isFile()) {
-    return {};
-  }
+  return constants.EMPTY_RETURN_VALUE;
+}
 
-  console.error(`\nShredding docker config in ${filePath}\n`);
-  return exec(`shred -u -n 3 -f ${filePath}`);
+async function getDockerImage(tag) {
+  const { stdout, stderr } = await simpleExec(`docker image ls ${tag} --format "{{json . }}"`);
+  if (!stderr) {
+    return stdout;
+  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
 function getLoginEnvironmentVariables(username, password) {
@@ -178,7 +152,6 @@ module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   parseDockerImageString,
-  logToActivityLog,
   execCommand,
-  isFile,
+  getDockerImage,
 };

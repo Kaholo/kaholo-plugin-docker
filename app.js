@@ -1,46 +1,54 @@
 const {
   bootstrap,
   docker,
+  helpers,
 } = require("@kaholo/plugin-library");
-const path = require("path");
 const {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   parseDockerImageString,
-  logToActivityLog,
   execCommand,
+  getDockerImage,
 } = require("./helpers");
+const constants = require("./consts.json");
 
 async function build({
   TAG: imageTag,
   PATH: buildPathInfo,
 }) {
-  let inputPath = buildPathInfo.absolutePath;
-  if (buildPathInfo.type !== "directory") {
-    inputPath = path.dirname(buildPathInfo.absolutePath);
+  // using parserOptions - buildPathInfo.exists and type === directory
+  const dockerFilePathInfo = await helpers.analyzePath(`${buildPathInfo.absolutePath}/Dockerfile`);
+  if (dockerFilePathInfo.type !== "file") {
+    throw new Error(`No Dockerfile was found at ${dockerFilePathInfo.absolutePath} on the Kaholo agent.`);
   }
 
-  const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${inputPath}`;
-  return execCommand(cmd);
+  const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${buildPathInfo.absolutePath}`;
+  await execCommand(cmd);
+  if (imageTag) {
+    return getDockerImage(imageTag);
+  }
+  return constants.EMPTY_RETURN_VALUE;
 }
 
-async function run({
-  imageName,
-  command,
-  environmentalVariables,
-  workingDirectory: workingDirectoryInfo,
-}) {
+async function run(params) {
+  const {
+    imageName,
+    command,
+    environmentalVariables,
+  } = params;
+
+  const workingDirectoryInfo = params.workingDirectory || await helpers.analyzePath("./");
   const workingDirectory = workingDirectoryInfo.absolutePath;
   if (workingDirectoryInfo.type !== "directory") {
-    throw new Error(`Path needs to point to a directory, provided path type: "${workingDirectoryInfo.type}"`);
+    throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
   }
 
   let cmd;
   if (environmentalVariables) {
     const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
-    cmd = `docker run --rm ${environmentVariablesParams} --workdir ${workingDirectory} ${imageName} ${command}`;
+    cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   } else {
-    cmd = `docker run --rm --workdir ${workingDirectory} ${imageName} ${command}`;
+    cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   }
 
   return execCommand(cmd, {
@@ -57,16 +65,17 @@ async function pull({
   const environmentVariables = getLoginEnvironmentVariables(username, password);
   const parsedImage = parseDockerImageString(image);
   const dockerPullCommand = `docker pull ${parsedImage.imagestring}`;
+  const credentialsGiven = (username && password);
 
   const command = (
-    (username && password)
+    (credentialsGiven)
       ? `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPullCommand}`
       : dockerPullCommand
   );
 
-  logToActivityLog(`Generated command: ${command}`);
-
-  return execCommand(command, environmentVariables);
+  console.info(`Running command: ${command}`);
+  await execCommand(command, environmentVariables, credentialsGiven);
+  return getDockerImage(parsedImage.imagestring);
 }
 
 async function pushImage({
@@ -77,12 +86,13 @@ async function pushImage({
   const parsedImage = parseDockerImageString(image);
   const dockerPushCommand = `docker push ${parsedImage.imagestring}`;
   const environmentVariables = getLoginEnvironmentVariables(username, password);
+  const credentialsGiven = true; // required in config.json
 
   const command = `${createDockerLoginCommand(parsedImage.hostport)} && ${dockerPushCommand}`;
 
-  logToActivityLog(`Generated command: ${command}`);
+  console.info(`Running command: ${command}`);
 
-  return execCommand(command, environmentVariables);
+  return execCommand(command, environmentVariables, credentialsGiven);
 }
 
 async function tag({
@@ -91,7 +101,8 @@ async function tag({
 }) {
   const command = `docker tag ${sourceImage} ${targetImage}`;
 
-  return execCommand(command);
+  await execCommand(command);
+  return getDockerImage(targetImage);
 }
 
 async function cmdExec({
@@ -102,12 +113,14 @@ async function cmdExec({
 }) {
   const commandsToExecute = [];
   let environmentVariables = {};
+  let shredCredentials = false;
 
   const useAuthentication = username && password;
 
   if (useAuthentication) {
     commandsToExecute.push(createDockerLoginCommand(registryUrl));
     environmentVariables = getLoginEnvironmentVariables(username, password);
+    shredCredentials = true;
   }
 
   const userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
@@ -115,9 +128,7 @@ async function cmdExec({
 
   const command = commandsToExecute.join(" && ");
 
-  const result = await execCommand(command, environmentVariables);
-
-  return result;
+  return execCommand(command, environmentVariables, shredCredentials);
 }
 
 module.exports = bootstrap({
