@@ -1,8 +1,10 @@
+const path = require("path");
 const {
   bootstrap,
   docker,
   helpers,
 } = require("@kaholo/plugin-library");
+
 const {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
@@ -15,14 +17,27 @@ const constants = require("./consts.json");
 async function build({
   TAG: imageTag,
   PATH: buildPathInfo,
+  buildContexts,
 }) {
   // using parserOptions - buildPathInfo.exists and type === directory
-  const dockerFilePathInfo = await helpers.analyzePath(`${buildPathInfo.absolutePath}/Dockerfile`);
+  const dockerFilePathInfo = await helpers.analyzePath(path.join(buildPathInfo.absolutePath, "Dockerfile"));
   if (dockerFilePathInfo.type !== "file") {
     throw new Error(`No Dockerfile was found at ${dockerFilePathInfo.absolutePath} on the Kaholo agent.`);
   }
 
-  const cmd = `docker build ${imageTag ? `-t ${imageTag} ` : ""}${buildPathInfo.absolutePath}`;
+  const cmdSegments = ["docker", "build"];
+
+  if (imageTag) {
+    cmdSegments.push("-t", imageTag);
+  }
+  if (buildContexts) {
+    cmdSegments.push(...(
+      buildContexts.flatMap((buildContext) => ["--build-context", buildContext])
+    ));
+  }
+  cmdSegments.push(buildPathInfo.absolutePath);
+  const cmd = cmdSegments.join(" ");
+
   await execCommand(cmd);
   if (imageTag) {
     return getDockerImage(imageTag);
