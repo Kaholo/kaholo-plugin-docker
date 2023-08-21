@@ -14,11 +14,12 @@ const constants = require("./consts.json");
 
 async function build({
   TAG: imageTag,
-  PATH: buildPathInfo,
+  PATH: buildPathInfo = helpers.analyzePath("./"),
+  dockerfileName = "Dockerfile",
 }) {
   // using parserOptions - buildPathInfo.exists and type === directory
-  const dockerFilePathInfo = await helpers.analyzePath(`${buildPathInfo.absolutePath}/Dockerfile`);
-  if (dockerFilePathInfo.type !== "file") {
+  const dockerFilePathInfo = await helpers.analyzePath(`${buildPathInfo.absolutePath}/${dockerfileName}`);
+  if (!dockerFilePathInfo.exists || dockerFilePathInfo.type !== "file") {
     throw new Error(`No Dockerfile was found at ${dockerFilePathInfo.absolutePath} on the Kaholo agent.`);
   }
 
