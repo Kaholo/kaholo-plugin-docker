@@ -45,8 +45,8 @@
           "viewName": "Dockerfile Name",
           "description": "Name of the Dockerfile in the working directory",
           "type": "string",
-          "required": true,
-          "default": "Dockerfile"
+          "default": "Dockerfile",
+          "placeholder": "Dockerfile"
         },
         {
           "name": "TAG",
