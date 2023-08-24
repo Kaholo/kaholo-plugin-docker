@@ -17,11 +17,6 @@ async function build({
   PATH: buildPathInfo,
   dockerfileName = "Dockerfile",
 }) {
-  // using parserOptions - buildPathInfo.exists and type === directory
-  console.info({
-    buildPathInfo,
-    dockerfileName,
-  });
   const workingDirectoryPath = (buildPathInfo ?? await helpers.analyzePath("./")).absolutePath;
   const dockerFilePathInfo = await helpers.analyzePath(`${workingDirectoryPath}/${dockerfileName}`);
   if (!dockerFilePathInfo.exists || dockerFilePathInfo.type !== "file") {
