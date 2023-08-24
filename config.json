@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -29,17 +29,24 @@
       "params": [
         {
           "name": "PATH",
-          "viewName": "Dockerfile Path",
+          "viewName": "Working Directory",
           "type": "string",
-          "description": "Path to a directory containing a Dockerfile",
+          "description": "Path to set as a working directory. If left empty, agent's workspace path is used",
           "placeholder": "myrepo/docker",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
-          "required": true,
           "parserType": "filePath",
           "parserOptions": {
             "throwIfDoesntExist": true,
             "acceptedTypes": ["directory"]
           }
+        },
+        {
+          "name": "dockerfileName",
+          "viewName": "Dockerfile Name",
+          "description": "Name of the Dockerfile in the working directory",
+          "type": "string",
+          "default": "Dockerfile",
+          "placeholder": "Dockerfile"
         },
         {
           "name": "TAG",
