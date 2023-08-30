@@ -31,7 +31,7 @@
           "name": "PATH",
           "viewName": "Working Directory",
           "type": "string",
-          "description": "Path to set as a working directory. If left empty, agent's workspace path is used",
+          "description": "Path on Kaholo agent to use as working directory, if empty default working directory is used.",
           "placeholder": "myrepo/docker",
           "learnUrl": "https://docs.docker.com/engine/reference/commandline/image_build/",
           "parserType": "filePath",
@@ -43,7 +43,7 @@
         {
           "name": "dockerfileName",
           "viewName": "Dockerfile Name",
-          "description": "Name of the Dockerfile in the working directory",
+          "description": "Dockerfile name or relative path within the working directory",
           "type": "string",
           "default": "Dockerfile",
           "placeholder": "Dockerfile"
@@ -60,14 +60,14 @@
     },
     {
       "name": "run",
-      "viewName": "Run Image",
+      "viewName": "Run Docker Container",
       "allowEmptyResult": true,
       "params": [
         {
           "name": "imageName",
           "viewName": "Image name",
           "type": "string",
-          "description": "Name of the docker image to run",
+          "description": "Name of the docker image to use to create container",
           "placeholder": "alpine",
           "learnUrl": "https://docs.docker.com/engine/reference/run/",
           "required": true
@@ -76,7 +76,7 @@
           "name": "command",
           "viewName": "Command",
           "type": "string",
-          "description": "Command to be executed by the image",
+          "description": "Command to be executed by the container",
           "learnUrl": "https://docs.docker.com/engine/reference/run/",
           "required": false
         },
