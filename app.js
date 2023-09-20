@@ -9,6 +9,7 @@ const {
   parseDockerImageString,
   execCommand,
   getDockerImage,
+  resolveEnvironmentalVariablesObject,
 } = require("./helpers");
 const constants = require("./consts.json");
 
@@ -36,6 +37,7 @@ async function run(params) {
     imageName,
     command,
     environmentalVariables,
+    secretEnvVariables,
   } = params;
 
   const workingDirectoryInfo = params.workingDirectory || await helpers.analyzePath("./");
@@ -45,8 +47,13 @@ async function run(params) {
   }
 
   let cmd;
-  if (environmentalVariables) {
-    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+  const resolvedEnv = resolveEnvironmentalVariablesObject(
+    environmentalVariables,
+    secretEnvVariables,
+  );
+
+  if (Object.keys(resolvedEnv).length > 0) {
+    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(resolvedEnv).join(" ");
     cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   } else {
     cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
@@ -54,7 +61,7 @@ async function run(params) {
 
   return execCommand(cmd, {
     ...process.env,
-    ...(environmentalVariables || {}),
+    ...resolvedEnv,
   });
 }
 
