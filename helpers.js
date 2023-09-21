@@ -108,10 +108,8 @@ async function execCommand(cmd, environmentVariables = {}, shred = false) {
 
   try {
     await exec(cmd, { env: environmentVariables });
+  } finally {
     await shredFile("/root/.docker/config.json");
-  } catch (error) {
-    await shredFile("/root/.docker/config.json");
-    throw new Error(error);
   }
 
   return constants.EMPTY_RETURN_VALUE;
