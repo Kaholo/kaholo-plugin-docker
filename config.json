@@ -75,7 +75,7 @@
         {
           "name": "command",
           "viewName": "Command",
-          "type": "string",
+          "type": "text",
           "description": "Command to be executed by the container",
           "learnUrl": "https://docs.docker.com/engine/reference/run/",
           "required": false

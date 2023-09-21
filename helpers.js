@@ -102,17 +102,18 @@ function parseDockerImageString(imagestring) {
 }
 
 async function execCommand(cmd, environmentVariables = {}, shred = false) {
-  if (shred) {
-    try {
-      await exec(cmd, { env: environmentVariables });
-      await shredFile("/root/.docker/config.json");
-    } catch (error) {
-      await shredFile("/root/.docker/config.json");
-      throw new Error(error);
-    }
-  } else {
+  if (!shred) {
     return exec(cmd, { env: environmentVariables });
   }
+
+  try {
+    await exec(cmd, { env: environmentVariables });
+    await shredFile("/root/.docker/config.json");
+  } catch (error) {
+    await shredFile("/root/.docker/config.json");
+    throw new Error(error);
+  }
+
   return constants.EMPTY_RETURN_VALUE;
 }
 

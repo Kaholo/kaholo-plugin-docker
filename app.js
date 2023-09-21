@@ -46,6 +46,7 @@ async function run(params) {
     throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
   }
 
+<<<<<<< HEAD
   let cmd;
   const resolvedEnv = resolveEnvironmentalVariablesObject(
     environmentalVariables,
@@ -57,7 +58,29 @@ async function run(params) {
     cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
   } else {
     cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
+=======
+  const commandName = "docker";
+  const commandArgs = [
+    "run",
+    "--rm",
+  ];
+
+  if (environmentalVariables) {
+    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
+    commandArgs.push(environmentVariablesParams);
+>>>>>>> c18650a (Add support for multiline commands)
   }
+
+  const stringifiedCommand = JSON.stringify(command.replace(/(\\\s*)?\n/g, "").trim());
+  commandArgs.push(
+    "-v",
+    `'${workingDirectory}':'${workingDirectory}'`,
+    "--workdir",
+    `'${workingDirectory}'`,
+    imageName,
+    `sh -c ${stringifiedCommand}`,
+  );
+  const cmd = `${commandName} ${commandArgs.join(" ")}`;
 
   return execCommand(cmd, {
     ...process.env,
