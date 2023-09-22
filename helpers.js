@@ -164,6 +164,25 @@ function resolveEnvironmentalVariablesObject(environmentalVariables, secretEnvir
   return resolvedEnv;
 }
 
+function prepareContainerCommand(rawCommandInput) {
+  const separateCommands = rawCommandInput
+    .trim()
+    .split(/(?<!\\\s*)(?:;\s*)?\n/g);
+
+  if (separateCommands.length === 1) {
+    return separateCommands[0];
+  }
+
+  const stringifiedCommands = JSON.stringify(
+    separateCommands
+      .map((command) => (
+        command.replace(/\\\s*\n/g, "")
+      ))
+      .join("; "),
+  );
+  return `/bin/sh -c ${stringifiedCommands}`;
+}
+
 module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
@@ -171,4 +190,5 @@ module.exports = {
   execCommand,
   getDockerImage,
   resolveEnvironmentalVariablesObject,
+  prepareContainerCommand,
 };

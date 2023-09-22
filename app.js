@@ -10,6 +10,7 @@ const {
   execCommand,
   getDockerImage,
   resolveEnvironmentalVariablesObject,
+  prepareContainerCommand,
 } = require("./helpers");
 const constants = require("./consts.json");
 
@@ -46,39 +47,29 @@ async function run(params) {
     throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
   }
 
-<<<<<<< HEAD
-  let cmd;
   const resolvedEnv = resolveEnvironmentalVariablesObject(
     environmentalVariables,
     secretEnvVariables,
   );
 
-  if (Object.keys(resolvedEnv).length > 0) {
-    const environmentVariablesParams = docker.buildEnvironmentVariableArguments(resolvedEnv).join(" ");
-    cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
-  } else {
-    cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
-=======
   const commandName = "docker";
   const commandArgs = [
     "run",
     "--rm",
   ];
 
-  if (environmentalVariables) {
+  if (Object.keys(resolvedEnv).length > 0) {
     const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
     commandArgs.push(environmentVariablesParams);
->>>>>>> c18650a (Add support for multiline commands)
   }
 
-  const stringifiedCommand = JSON.stringify(command.replace(/(\\\s*)?\n/g, "").trim());
   commandArgs.push(
     "-v",
     `'${workingDirectory}':'${workingDirectory}'`,
     "--workdir",
     `'${workingDirectory}'`,
     imageName,
-    `sh -c ${stringifiedCommand}`,
+    prepareContainerCommand(command),
   );
   const cmd = `${commandName} ${commandArgs.join(" ")}`;
 
