@@ -148,10 +148,28 @@ const createDockerLoginCommand = (registryUrl) => (
   `echo $KAHOLO_DOCKER_PLUGIN_PASSWORD | docker login ${registryUrl ? `${registryUrl} ` : ""}-u $KAHOLO_DOCKER_PLUGIN_USER --password-stdin`
 );
 
+function resolveEnvironmentalVariablesObject(environmentalVariables, secretEnvironmentalVariables) {
+  let resolvedEnv = {};
+  if (environmentalVariables) {
+    resolvedEnv = {
+      ...resolvedEnv,
+      ...environmentalVariables,
+    };
+  }
+  if (secretEnvironmentalVariables) {
+    resolvedEnv = {
+      ...resolvedEnv,
+      ...secretEnvironmentalVariables,
+    };
+  }
+  return resolvedEnv;
+}
+
 module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
   parseDockerImageString,
   execCommand,
   getDockerImage,
+  resolveEnvironmentalVariablesObject,
 };

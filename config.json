@@ -90,6 +90,13 @@
           "required": false
         },
         {
+          "name": "secretEnvVariables",
+          "viewName": "Secret Environment Variables",
+          "type": "vault",
+          "parserType": "keyValuePairs",
+          "description": "One-per-line Key=Value pairs stored as a Kaholo Vault item"
+        },
+        {
           "name": "workingDirectory",
           "viewName": "Working directory",
           "type": "string",
