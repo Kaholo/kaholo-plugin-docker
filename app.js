@@ -132,6 +132,7 @@ async function cmdExec({
   USER: username,
   PASSWORD: password,
   registryUrl,
+  attemptJson,
 }) {
   const commandsToExecute = [];
   let environmentVariables = {};
@@ -145,12 +146,20 @@ async function cmdExec({
     shredCredentials = true;
   }
 
-  const userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
+  let userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
+  if (attemptJson && !/ --format ['"]{{json . }}['"]/g.test(userCommand)) {
+    userCommand += " --format \"{{json . }}\"";
+  }
   commandsToExecute.push(userCommand);
 
   const command = commandsToExecute.join(" && ");
 
-  return execCommand(command, environmentVariables, shredCredentials);
+  return execCommand(
+    command,
+    environmentVariables,
+    shredCredentials,
+    attemptJson,
+  );
 }
 
 module.exports = bootstrap({
