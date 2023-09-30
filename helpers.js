@@ -8,33 +8,62 @@ const simpleExec = util.promisify(childProcess.exec);
 
 async function exec(command, cmdOptions = {}, options = {}) {
   const {
-    onProgressFn = process.stdout.write.bind(process.stdout),
+    parseJson = false,
   } = options;
 
-  let childProcessInstance;
-  try {
-    childProcessInstance = childProcess.exec(command, cmdOptions);
-  } catch (error) {
-    throw new Error(error);
-  }
+  const childProcessInstance = childProcess.exec(command, cmdOptions);
+  const jsonChunks = [];
+  const addJsonChunk = (chunk) => {
+    if (!parseJson) {
+      return {
+        unparsed: [chunk],
+      };
+    }
+
+    const unparsed = [];
+    const parsedChunk = chunk
+      .split("\n") // chunk may contain multiple lines of json values
+      .filter(Boolean) // filter out empty lines
+      .map((line) => safeParseJson(line.trim())); // try parsing trimmed line
+
+    parsedChunk.forEach((parsingResult) => {
+      if (parsingResult.parsed) {
+        jsonChunks.push(parsingResult.value);
+      } else {
+        unparsed.push(parsingResult.value);
+      }
+    });
+
+    return { unparsed };
+  };
 
   childProcessInstance.stdout.on("data", (data) => {
-    onProgressFn?.(data);
+    const { unparsed } = addJsonChunk(data);
+    if (unparsed.length > 0) {
+      process.stdout.write(unparsed.join("\n"));
+    }
   });
   childProcessInstance.stderr.on("data", (data) => {
-    onProgressFn?.(data);
+    const { unparsed } = addJsonChunk(data);
+    if (unparsed.length > 0) {
+      process.stderr.write(unparsed.join("\n"));
+    }
   });
   childProcessInstance.on("error", (error) => {
     throw new Error(error);
   });
 
-  try {
-    await util.promisify(childProcessInstance.on.bind(childProcessInstance))("close");
-  } catch (error) {
-    throw new Error(error);
+  await util.promisify(childProcessInstance.on.bind(childProcessInstance))("close");
+
+  if (!parseJson) {
+    return constants.EMPTY_RETURN_VALUE;
   }
 
-  return constants.EMPTY_RETURN_VALUE;
+  if (jsonChunks.length === 0) {
+    console.info("No JSON found in output");
+  }
+
+  return jsonChunks.flat();
 }
 
 function parseDockerImageString(imagestring) {
@@ -101,19 +130,21 @@ function parseDockerImageString(imagestring) {
   };
 }
 
-async function execCommand(cmd, environmentVariables = {}, shred = false) {
-  if (shred) {
-    try {
-      await exec(cmd, { env: environmentVariables });
-      await shredFile("/root/.docker/config.json");
-    } catch (error) {
-      await shredFile("/root/.docker/config.json");
-      throw new Error(error);
-    }
-  } else {
-    return exec(cmd, { env: environmentVariables });
+async function execCommand(
+  cmd,
+  environmentVariables = {},
+  shred = false,
+  parseJson = false,
+) {
+  if (!shred) {
+    return exec(cmd, { env: environmentVariables }, { parseJson });
   }
-  return constants.EMPTY_RETURN_VALUE;
+
+  try {
+    return await exec(cmd, { env: environmentVariables }, { parseJson });
+  } finally {
+    await shredFile("/root/.docker/config.json");
+  }
 }
 
 async function shredFile(filePath) {
@@ -165,6 +196,33 @@ function resolveEnvironmentalVariablesObject(environmentalVariables, secretEnvir
   return resolvedEnv;
 }
 
+function prepareContainerCommand(rawCommandInput) {
+  const separateCommands = rawCommandInput
+    .trim()
+    .split(/(?<!\\\s*)(?:;\s*)?\n/g);
+
+  if (separateCommands.length === 1) {
+    return separateCommands[0];
+  }
+
+  const stringifiedCommands = JSON.stringify(
+    separateCommands
+      .map((command) => (
+        command.replace(/\\\s*\n/g, "")
+      ))
+      .join("; "),
+  );
+  return `/bin/sh -c ${stringifiedCommands}`;
+}
+
+function safeParseJson(value) {
+  try {
+    return { parsed: true, value: JSON.parse(value) };
+  } catch {
+    return { parsed: false, value };
+  }
+}
+
 module.exports = {
   getLoginEnvironmentVariables,
   createDockerLoginCommand,
@@ -172,4 +230,5 @@ module.exports = {
   execCommand,
   getDockerImage,
   resolveEnvironmentalVariablesObject,
+  prepareContainerCommand,
 };
