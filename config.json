@@ -242,6 +242,7 @@
           "name": "attemptJson",
           "viewName": "Attempt JSON Output",
           "type": "boolean",
+          "default": false,
           "description": "If selected '--format {{json . }}' will be appended to the command, and output will be parsed as JSON"
         }
       ]
