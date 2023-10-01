@@ -38,9 +38,8 @@ This method creates a new Docker image with a new tag from a Dockerfile. This is
 ### Parameter: Working Directory
 This is the path to the directory containing a file named Dockerfile. A relative or absolute path may be used. If relative, it is relative to the default working directory on the Kaholo agent, e.g. `/twiddlebug/workspace`. To find the default working directory on any Kaholo agent, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases) to run command `pwd`.
 
-If using a file NOT named Dockerfile, e.g. Dockerfile.prod or Dockerfile.dev or build using a Dockerfile that is not in the build context (Working Directory), then use Method "Run Docker Command" instead. For example...
-
-   docker build -f dockerfiles/Dockerfile.debug -t myapp_debug .
+### Parameter: Dockerfile Path
+If left unspecified, the plugin will look for a file named `Dockerfile` in the Working Directory. To use a Dockerfile with a different file name or path, specify the path and filename here. For example, `dockerfiles/Dockerfile.debug`.
 
 ### Parameter: Tag
 This is the tag for the docker image being built - at minimum usually the repository name, e.g. `myapp`, and often including a version, e.g. `myapp:1.2.0`. If no tag is provided, the image will be created with an ID only, e.g. `28e09682c387`. If a tag IS provided, the tag and other information about the image is provided in Final Result as a JSON document, which makes access to the details from the code layer easier. For example the size of the image might be `kaholo.actions.Docker1.result.Size`, were `Docker1` is the ID of the specific Action from which the result is to be obtained.
@@ -80,6 +79,9 @@ These are one-per-line key=value pairs that will be passed into the docker conta
     VERSION=3.2.1
 
 Using the alpine image with command `echo Building Version $VERSION in mode $MODE.`, the Final Result will be `Building Version 3.2.1 in mode development.`. This has many potential purposes but is optional.
+
+### Parameter: Secret Environment Variables
+These are the same as Enviroinment Variables, however Secret ones are stored in Kaholo Vault so they will not appear in the UI, logs, or error messages. This is less transparent but more secure when dealing with sensitive information like tokens, passwords, ssh keys, etc.
 
 ### Parameter: Working Directory
 The Working Directory is a path on the Kaholo agent that will be mounted as a Docker volume so it is accessible both within the container, and after the container is destroyed. In the example of using image `builder001` to build a Maven project with command `mvn package`, this can work only if the Working Directory is a path on the Kaholo agent that contains a Maven project. The Working Directory is typically a product of the [Git Plugin](https://github.com/Kaholo/kaholo-plugin-git/releases) - a repo that has been cloned from source onto the Kaholo Agent, but there are many other possibilities. In this example a Java `jar` file is probably built as a result. When the build is finished and the container destroyed, the product of the build can still be found in the Working Directory on the Kaholo agent, e.g. `target/myapp-3.2.1.jar`.

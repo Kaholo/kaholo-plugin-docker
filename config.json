@@ -42,7 +42,7 @@
         },
         {
           "name": "dockerfileName",
-          "viewName": "Dockerfile Name",
+          "viewName": "Dockerfile Path",
           "description": "Dockerfile name or relative path within the working directory",
           "type": "string",
           "default": "Dockerfile",
