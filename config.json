@@ -65,7 +65,7 @@
       "params": [
         {
           "name": "imageName",
-          "viewName": "Image name",
+          "viewName": "Image",
           "type": "string",
           "description": "Name of the docker image to use to create container",
           "placeholder": "alpine",

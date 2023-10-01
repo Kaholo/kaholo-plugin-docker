@@ -38,7 +38,7 @@ This method creates a new Docker image with a new tag from a Dockerfile. This is
 ### Parameter: Working Directory
 This is the path to the directory containing a file named Dockerfile. A relative or absolute path may be used. If relative, it is relative to the default working directory on the Kaholo agent, e.g. `/twiddlebug/workspace`. To find the default working directory on any Kaholo agent, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases) to run command `pwd`.
 
-If you wish to use a file NOT named Dockerfile, e.g. Dockerfile.prod or Dockerfile.dev or build using a Dockerfile that is not in the build context (Working Directory), then use Method "Run Docker Command" instead. For example...
+If using a file NOT named Dockerfile, e.g. Dockerfile.prod or Dockerfile.dev or build using a Dockerfile that is not in the build context (Working Directory), then use Method "Run Docker Command" instead. For example...
 
    docker build -f dockerfiles/Dockerfile.debug -t myapp_debug .
 
@@ -70,6 +70,8 @@ This is the image to run as a docker container. At minimum it must be a repo nam
 
 ### Parameter: Command
 Docker images normally start with default commands or entrypoints, but a specific command can be injected as well. For example running image `alpine` with command `ls -la` will list all the files in the default home directory within the docker container.
+
+Multiple commands may be entered one per line and the plugin will attempt to append them into a single command using `/bin/sh -c` as a wrapper and `; ` to separate the commands. Success will depend on the image used, but if this fails, it may be possible to manually assemble commands into a single line and still succeed, e.g. by not using `/bin/sh -c` or using `&&` instead of `; `, etc.
 
 ### Parameter: Environment Variables
 These are one-per-line key=value pairs that will be passed into the docker container as environment variables. For example, if configured like so:
@@ -127,7 +129,7 @@ The tag of an existing image or one to be automatically pulled, using the expans
 The new tag of the image, using the expansive meaning of "tag" as explained in above in section [Docker Tags](#docker-tags).
 
 ## Method: Run Docker Command
-This method allows one to generically run any command that begins with `docker`. The main purpose is to cover any docker functionality that is not covered already by the other more user-friendly methods. If authentication is not required, for example running `docker image ls`, then the first three parameters can be left unconfigured.
+This method allows one to generically run any command that begins with `docker`. The main purpose is to cover any docker functionality that is not covered already by the other more user-friendly methods. If authentication is not required, for example running `docker image ls`, then the first three parameters may be left unconfigured.
 
 Example: Busybox loop
 
@@ -144,5 +146,8 @@ Should the docker registry require authentication to run the docker command, spe
 ### Parameter: Registry URL
 Should the docker registry require authentication to run the docker command, specify the URL of the registry here. For example, `https://nexus-a.kaholodemo.net`. If left emtpy, `https://registry-1.docker.io` is assumed.
 
-### Parameter: Docker Command
+### Parameter: Command
 The actual command to run. It must begin with `docker`. To run commands that are NOT `docker` commands, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases).
+
+### Parameter: Attempt JSON Output
+Many docker commands accept argument `--format "{{json . }}"` to provide JSON-formatted output. This makes the output readily available on the Kaholo code layer using notation such as `kaholo.actions.docker1.result[0].Size`. To conveniently add this argument to the docker command, enable this parameter. The same argument may also be entered directly into the Command parameter.
