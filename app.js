@@ -37,8 +37,8 @@ async function run(params) {
   const {
     imageName,
     command,
-    environmentalVariables,
-    secretEnvVariables,
+    environmentalVariables = {},
+    secretEnvVariables = {},
   } = params;
 
   const workingDirectoryInfo = params.workingDirectory || await helpers.analyzePath("./");
