@@ -5,7 +5,7 @@
   "execProgram": "node",
   "main": "app.js",
   "imgUrl": "logo.png",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Build, Push and Pull Docker Containers or run other Docker Commands",
   "category": [
     "Containers"
@@ -42,7 +42,7 @@
         },
         {
           "name": "dockerfileName",
-          "viewName": "Dockerfile Name",
+          "viewName": "Dockerfile Path",
           "description": "Dockerfile name or relative path within the working directory",
           "type": "string",
           "default": "Dockerfile",
@@ -65,7 +65,7 @@
       "params": [
         {
           "name": "imageName",
-          "viewName": "Image name",
+          "viewName": "Image",
           "type": "string",
           "description": "Name of the docker image to use to create container",
           "placeholder": "alpine",
@@ -242,6 +242,7 @@
           "name": "attemptJson",
           "viewName": "Attempt JSON Output",
           "type": "boolean",
+          "default": false,
           "description": "If selected '--format {{json . }}' will be appended to the command, and output will be parsed as JSON"
         }
       ]
