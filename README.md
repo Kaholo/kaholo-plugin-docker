@@ -38,15 +38,14 @@ This method creates a new Docker image with a new tag from a Dockerfile. This is
 ### Parameter: Working Directory
 This is the path to the directory containing a file named Dockerfile. A relative or absolute path may be used. If relative, it is relative to the default working directory on the Kaholo agent, e.g. `/twiddlebug/workspace`. To find the default working directory on any Kaholo agent, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases) to run command `pwd`.
 
-If you wish to use a file NOT named Dockerfile, e.g. Dockerfile.prod or Dockerfile.dev or build using a Dockerfile that is not in the build context (Working Directory), then use Method "Run Docker Command" instead. For example...
-
-   docker build -f dockerfiles/Dockerfile.debug -t myapp_debug .
+### Parameter: Dockerfile Path
+If left unspecified, the plugin will look for a file named `Dockerfile` in the Working Directory. To use a Dockerfile with a different file name or path, specify the path and filename here. For example, `dockerfiles/Dockerfile.debug`.
 
 ### Parameter: Tag
 This is the tag for the docker image being built - at minimum usually the repository name, e.g. `myapp`, and often including a version, e.g. `myapp:1.2.0`. If no tag is provided, the image will be created with an ID only, e.g. `28e09682c387`. If a tag IS provided, the tag and other information about the image is provided in Final Result as a JSON document, which makes access to the details from the code layer easier. For example the size of the image might be `kaholo.actions.Docker1.result.Size`, were `Docker1` is the ID of the specific Action from which the result is to be obtained.
 
-## Method: Run Image
-This method runs a docker image. For example if a specific build server image, `builder001` has been created with method Docker Build, one might use this method to run it in order to build a maven project with command `mvn package`. This is particularly useful when specific version of packages or other uncommon components are required to execute a task. Another common use case is when a product or service is provided at a docker image, for example the Oracle Cloud CLI. Since there is no Kaholo Oracle CLI plugin, one could use this plugin to run the image instead, executing any Oracle Cloud CLI command without installing it or its dependencies on the Kaholo agent.
+## Method: Run Docker Container
+This method runs a new docker container. For example if a specific build server image, `builder001` has been created with method Docker Build, one might use this method to run it in order to build a maven project with command `mvn package`. This is particularly useful when specific version of packages or other uncommon components are required to execute a task. Another common use case is when a product or service is provided at a docker image, for example the Oracle Cloud CLI. Since there is no Kaholo Oracle CLI plugin, one could use this plugin to run the image instead, executing any Oracle Cloud CLI command without installing it or its dependencies on the Kaholo agent.
 
 Note this method is meant to run an image to accomplish some task, which then exits and the container is destroyed to free resources on the Kaholo agent. Please do not use this method to deploy applications that run indefinitely on the Kaholo agent. To deploy an image for indefinite use, have a dedicated server and use the [SSH Plugin](https://github.com/Kaholo/kaholo-plugin-ssh/releases) to run command `docker run` there, or deploy the image to Kubernetes using the [Kubernetes Plugin](https://github.com/Kaholo/kaholo-plugin-kubernetes/releases).
 
@@ -71,6 +70,8 @@ This is the image to run as a docker container. At minimum it must be a repo nam
 ### Parameter: Command
 Docker images normally start with default commands or entrypoints, but a specific command can be injected as well. For example running image `alpine` with command `ls -la` will list all the files in the default home directory within the docker container.
 
+Multiple commands may be entered one per line and the plugin will attempt to append them into a single command using `/bin/sh -c` as a wrapper and `; ` to separate the commands. Success will depend on the image used, but if this fails, it may be possible to manually assemble commands into a single line and still succeed, e.g. by not using `/bin/sh -c` or using `&&` instead of `; `, etc.
+
 ### Parameter: Environment Variables
 These are one-per-line key=value pairs that will be passed into the docker container as environment variables. For example, if configured like so:
 
@@ -78,6 +79,9 @@ These are one-per-line key=value pairs that will be passed into the docker conta
     VERSION=3.2.1
 
 Using the alpine image with command `echo Building Version $VERSION in mode $MODE.`, the Final Result will be `Building Version 3.2.1 in mode development.`. This has many potential purposes but is optional.
+
+### Parameter: Secret Environment Variables
+These are the same as Enviroinment Variables, however Secret ones are stored in Kaholo Vault so they will not appear in the UI, logs, or error messages. This is less transparent but more secure when dealing with sensitive information like tokens, passwords, ssh keys, etc.
 
 ### Parameter: Working Directory
 The Working Directory is a path on the Kaholo agent that will be mounted as a Docker volume so it is accessible both within the container, and after the container is destroyed. In the example of using image `builder001` to build a Maven project with command `mvn package`, this can work only if the Working Directory is a path on the Kaholo agent that contains a Maven project. The Working Directory is typically a product of the [Git Plugin](https://github.com/Kaholo/kaholo-plugin-git/releases) - a repo that has been cloned from source onto the Kaholo Agent, but there are many other possibilities. In this example a Java `jar` file is probably built as a result. When the build is finished and the container destroyed, the product of the build can still be found in the Working Directory on the Kaholo agent, e.g. `target/myapp-3.2.1.jar`.
@@ -127,7 +131,7 @@ The tag of an existing image or one to be automatically pulled, using the expans
 The new tag of the image, using the expansive meaning of "tag" as explained in above in section [Docker Tags](#docker-tags).
 
 ## Method: Run Docker Command
-This method allows one to generically run any command that begins with `docker`. The main purpose is to cover any docker functionality that is not covered already by the other more user-friendly methods. If authentication is not required, for example running `docker image ls`, then the first three parameters can be left unconfigured.
+This method allows one to generically run any command that begins with `docker`. The main purpose is to cover any docker functionality that is not covered already by the other more user-friendly methods. If authentication is not required, for example running `docker image ls`, then the first three parameters may be left unconfigured.
 
 Example: Busybox loop
 
@@ -144,5 +148,8 @@ Should the docker registry require authentication to run the docker command, spe
 ### Parameter: Registry URL
 Should the docker registry require authentication to run the docker command, specify the URL of the registry here. For example, `https://nexus-a.kaholodemo.net`. If left emtpy, `https://registry-1.docker.io` is assumed.
 
-### Parameter: Docker Command
+### Parameter: Command
 The actual command to run. It must begin with `docker`. To run commands that are NOT `docker` commands, use the [Command Line plugin](https://github.com/Kaholo/kaholo-plugin-cmd/releases).
+
+### Parameter: Attempt JSON Output
+Many docker commands accept argument `--format "{{json . }}"` to provide JSON-formatted output. This makes the output readily available on the Kaholo code layer using notation such as `kaholo.actions.docker1.result[0].Size`. To conveniently add this argument to the docker command, enable this parameter. The same argument may also be entered directly into the Command parameter.

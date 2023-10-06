@@ -9,6 +9,8 @@ const {
   parseDockerImageString,
   execCommand,
   getDockerImage,
+  resolveEnvironmentalVariablesObject,
+  prepareContainerCommand,
 } = require("./helpers");
 const constants = require("./consts.json");
 
@@ -35,7 +37,8 @@ async function run(params) {
   const {
     imageName,
     command,
-    environmentalVariables,
+    environmentalVariables = {},
+    secretEnvVariables = {},
   } = params;
 
   const workingDirectoryInfo = params.workingDirectory || await helpers.analyzePath("./");
@@ -44,17 +47,35 @@ async function run(params) {
     throw new Error(`Working Directory must be a directory, provided path type: "${workingDirectoryInfo.type}"`);
   }
 
-  let cmd;
-  if (environmentalVariables) {
+  const resolvedEnv = resolveEnvironmentalVariablesObject(
+    environmentalVariables,
+    secretEnvVariables,
+  );
+
+  const commandName = "docker";
+  const commandArgs = [
+    "run",
+    "--rm",
+  ];
+
+  if (Object.keys(resolvedEnv).length > 0) {
     const environmentVariablesParams = docker.buildEnvironmentVariableArguments(environmentalVariables).join(" ");
-    cmd = `docker run --rm ${environmentVariablesParams} -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
-  } else {
-    cmd = `docker run --rm -v '${workingDirectory}':'${workingDirectory}' --workdir '${workingDirectory}' ${imageName} ${command}`;
+    commandArgs.push(environmentVariablesParams);
   }
+
+  commandArgs.push(
+    "-v",
+    `'${workingDirectory}':'${workingDirectory}'`,
+    "--workdir",
+    `'${workingDirectory}'`,
+    imageName,
+    prepareContainerCommand(command),
+  );
+  const cmd = `${commandName} ${commandArgs.join(" ")}`;
 
   return execCommand(cmd, {
     ...process.env,
-    ...(environmentalVariables || {}),
+    ...resolvedEnv,
   });
 }
 
@@ -111,6 +132,7 @@ async function cmdExec({
   USER: username,
   PASSWORD: password,
   registryUrl,
+  attemptJson,
 }) {
   const commandsToExecute = [];
   let environmentVariables = {};
@@ -124,12 +146,20 @@ async function cmdExec({
     shredCredentials = true;
   }
 
-  const userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
+  let userCommand = inputCommand.startsWith("docker ") ? inputCommand : `docker ${inputCommand}`;
+  if (attemptJson && !/ --format ['"]{{json . }}['"]/g.test(userCommand)) {
+    userCommand += " --format \"{{json . }}\"";
+  }
   commandsToExecute.push(userCommand);
 
   const command = commandsToExecute.join(" && ");
 
-  return execCommand(command, environmentVariables, shredCredentials);
+  return execCommand(
+    command,
+    environmentVariables,
+    shredCredentials,
+    attemptJson,
+  );
 }
 
 module.exports = bootstrap({
