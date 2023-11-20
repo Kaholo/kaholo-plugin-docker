@@ -69,8 +69,11 @@ async function run(params) {
     "--workdir",
     `'${workingDirectory}'`,
     imageName,
-    prepareContainerCommand(command),
   );
+
+  if (command) {
+    commandArgs.push(prepareContainerCommand(command));
+  }
   const cmd = `${commandName} ${commandArgs.join(" ")}`;
 
   return execCommand(cmd, {
@@ -95,7 +98,7 @@ async function pull({
       : dockerPullCommand
   );
 
-  console.info(`Running command: ${command}`);
+  console.error(`Running command: ${command}`);
   await execCommand(command, environmentVariables, credentialsGiven);
   return getDockerImage(parsedImage.imagestring);
 }
